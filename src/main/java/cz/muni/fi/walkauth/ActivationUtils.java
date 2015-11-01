@@ -7,22 +7,18 @@ import static java.lang.Math.tanh;
  */
 public class ActivationUtils {
 
-	private final double amplitude = 1.7159;
-	private final double frequency = 0.6666667;
+	private static final double AMPLITUDE = 1.7159;
+	private static final double FREQUENCY = 0.6666667;
 
 	private ActivationUtils() {
 		throw new AssertionError("This is a noninstantiable utility class.");
 	}
 	
 	public double activationFunction(double x) {
-		return amplitude * tanh(frequency * x);
+		return AMPLITUDE * tanh(FREQUENCY * x);
 	}
 	
 	public double activationFunctionFirstDerivative(double x) {
-		throw new UnsupportedOperationException("Not implemented yet.");
-	}
-	
-	public double activationFunctionSecondDerivative(double x) {
 		throw new UnsupportedOperationException("Not implemented yet.");
 	}
 
