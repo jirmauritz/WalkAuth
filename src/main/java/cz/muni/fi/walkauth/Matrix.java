@@ -213,7 +213,7 @@ public final class Matrix {
 	 *
 	 * @return transposition of the matrix
 	 */
-	public Matrix traspose() {
+	public Matrix transpose() {
 		throw new UnsupportedOperationException("Not implemented yet.");
 	}
 
