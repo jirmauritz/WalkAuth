@@ -14,7 +14,7 @@ public class ActivationUtils {
 		throw new AssertionError("This is a noninstantiable utility class.");
 	}
 	
-	public double activationFunction(double x) {
+	public static double activationFunction(double x) {
 		return AMPLITUDE * tanh(FREQUENCY * x);
 	}
 	
