@@ -23,6 +23,7 @@ public class Sampler {
 	/**
 	 * Split raw data into samples, which are stored in data/samples/ in the same named files.
 	 * The sample is specified number of lines divided by a new line.
+	 * Method also removes unnecessary timestamps of measuring.
 	 * 
 	 * @param entriesForSample - parameter defining how many entries (lines) is one sample
 	 * @throws IOException when the data/raw/ directory does not exist or you do not have permissions
@@ -37,7 +38,14 @@ public class Sampler {
 		
 		// sample directory path
 		File sampleDirectory = new File(SAMPLES_DIR);
+		
+		// clean old data if exist
+		if (isSampled()) {
+			System.out.println("Cleaning of old samples...");
+			clearSamples();
+		}
 		Files.createDirectories(sampleDirectory.toPath());
+		
 
 		BufferedReader reader;
 		PrintWriter writer;
@@ -60,13 +68,15 @@ public class Sampler {
 					// next sample
 					writer.println();
 				}
-				writer.println(line);
+				writer.println(line.split(",", 2)[1]);
 				entry++;
 				line = reader.readLine();
 			}
 			// close last sample
 			writer.close();
 		}
+		
+		System.out.println("Samples successfully created.");
 	}
 	
 	public void clearSamples() throws IOException {
@@ -85,6 +95,13 @@ public class Sampler {
 		
 		// delete it
 		FileUtils.deleteDirectory(sampleDirectory);
+	}
+	
+	public boolean isSampled() {
+		// sample directory path
+		File sampleDirectory = new File(SAMPLES_DIR);
+	
+		return sampleDirectory.exists();
 	}
 
 }
