@@ -1,10 +1,6 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package cz.muni.fi.walkauth;
 
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -41,8 +37,13 @@ public class NeuralNetwork {
         }
     }
 
+    public List<Matrix> getLayers() {
+        return Collections.unmodifiableList(layers);
+    }
+
     /**
      * Gets the weight of given neuron.
+     *
      * @param layer layer in which neuron is
      * @param neuronNumber position in layer
      * @param weightNumber position in neuron
@@ -58,6 +59,7 @@ public class NeuralNetwork {
 
     /**
      * Sets the weight of given neuron.
+     *
      * @param layer layer in which neuron is
      * @param neuronNumber position in layer
      * @param weightNumber position in neuron
@@ -101,10 +103,6 @@ public class NeuralNetwork {
         }
 
         return potentials;
-    }
-
-    public void learn() {
-        throw new UnsupportedOperationException("Not implemented yet.");
     }
 
     @Override
