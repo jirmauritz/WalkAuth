@@ -20,9 +20,9 @@ public class DataManager {
 	private final Sampler sampler = new Sampler();
 
 	// data
-	private List<Sample> trainData = new ArrayList<>();
-	private List<Sample> testData = new ArrayList<>();
-	private List<Sample> verifyData = new ArrayList<>();
+	private List<Sample> trainData;
+	private List<Sample> testData;
+	private List<Sample> verifyData;
 
 	public void prepareData(
 			int entriesForSample,
@@ -32,6 +32,11 @@ public class DataManager {
 			float testDataRatio,
 			float verifyDataRatio
 	) throws IOException {
+		
+		// crear data
+		trainData = new ArrayList<>();
+		testData = new ArrayList<>();
+		verifyData = new ArrayList<>();
 
 		// verify ratios
 		if (Math.abs(trainDataRatio + testDataRatio + verifyDataRatio - 1) > 0.0001) {
@@ -195,4 +200,30 @@ public class DataManager {
 		}
 	}
 
+	public List<Sample> getTrainData() {
+		return trainData;
+	}
+
+	public void setTrainData(List<Sample> trainData) {
+		this.trainData = trainData;
+	}
+
+	public List<Sample> getTestData() {
+		return testData;
+	}
+
+	public void setTestData(List<Sample> testData) {
+		this.testData = testData;
+	}
+
+	public List<Sample> getVerifyData() {
+		return verifyData;
+	}
+
+	public void setVerifyData(List<Sample> verifyData) {
+		this.verifyData = verifyData;
+	}
+
+	
+	
 }
