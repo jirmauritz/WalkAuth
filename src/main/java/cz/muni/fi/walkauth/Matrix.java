@@ -1,5 +1,7 @@
 package cz.muni.fi.walkauth;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -263,7 +265,7 @@ public final class Matrix {
      * @return list containing all values from the matrix
      */
     public List<Double> toList() {
-        List<Double> list = new LinkedList<>();
+        List<Double> list = new ArrayList<>(n * m);
         for (int i = 0; i < n; i++) {
             for (int j = 0; j < m; j++) {
                 list.add(this.values[i][j]);
@@ -283,5 +285,33 @@ public final class Matrix {
         }
         return repr;
     }
+
+	@Override
+	public int hashCode() {
+		return Arrays.deepHashCode(this.values);
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (obj == null) {
+			return false;
+		}
+		if (getClass() != obj.getClass()) {
+			return false;
+		}
+		final Matrix other = (Matrix) obj;
+		if (this.n != other.n) {
+			return false;
+		}
+		if (this.m != other.m) {
+			return false;
+		}
+		if (!Arrays.deepEquals(this.values, other.values)) {
+			return false;
+		}
+		return true;
+	}
+	
+	
 
 }

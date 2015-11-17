@@ -9,7 +9,14 @@ import java.util.List;
  */
 public class NeuralNetworkLearning {
     
-    private List<Matrix> backPropagation(NeuralNetwork n, List<Sample> data) {
+	/**
+	* Backpropagation algorithm for computing gradient of error function.
+	* 
+	* @param neuralNetwork configuration of neural network
+	* @param data data for evaluating the error
+	* @return partial derivatives of error function with respect to each weight
+	*/
+    public static List<Matrix> backpropagation(NeuralNetwork neuralNetwork, List<Sample> data) {
         return null;
     }
     
