@@ -2,10 +2,8 @@ package cz.muni.fi.walkauth.preprocessing;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -17,26 +15,24 @@ import java.util.Random;
  */
 public class DataManager {
 
-	private final Sampler sampler = new Sampler();
-
 	// data
-	private List<Sample> trainData;
-	private List<Sample> testData;
-	private List<Sample> verifyData;
+	private List<Sample> trainingData;
+	private List<Sample> testingData;
+	private List<Sample> validationData;
 
 	public void prepareData(
 			int entriesForSample,
 			String dataPath,
-			String testingUserFilePath,
+			String positiveUserFilePath,
 			float trainDataRatio,
 			float testDataRatio,
 			float verifyDataRatio
 	) throws IOException {
 		
 		// crear data
-		trainData = new ArrayList<>();
-		testData = new ArrayList<>();
-		verifyData = new ArrayList<>();
+		trainingData = new ArrayList<>();
+		testingData = new ArrayList<>();
+		validationData = new ArrayList<>();
 
 		// verify ratios
 		if (Math.abs(trainDataRatio + testDataRatio + verifyDataRatio - 1) > 0.0001) {
@@ -45,85 +41,78 @@ public class DataManager {
 					+ ", test " + testDataRatio + " and verify data " + verifyDataRatio + " has to be 1 in sum.");
 		}
 
-		// sample
-		if (!(sampler.isSampled())) {
-			sampler.sample(entriesForSample);
-		}
-
-		// load testing user data
-		List<Sample> testingUserData = getSamplesFromFile(new File(dataPath + testingUserFilePath), true);
+		// load positive user data
+		List<Sample> positiveUserData = getSamplesFromFile(new File(dataPath + positiveUserFilePath), entriesForSample, true);
 
 		// load other data
-		List<Sample> othersData = new ArrayList<>();
+		List<Sample> negativeUserData = new ArrayList<>();
 		File sampleDir = new File(dataPath);
 		for (File walkDataFile : sampleDir.listFiles()) {
-			// skip the user testing data file
-			if (walkDataFile.getName().equals(testingUserFilePath)) {
+			// skip the positive user data file
+			if (walkDataFile.getName().equals(positiveUserFilePath)) {
 				break;
 			}
 			// load walk data
-			othersData.addAll(getSamplesFromFile(walkDataFile, false));
+			negativeUserData.addAll(getSamplesFromFile(walkDataFile, entriesForSample, false));
 		}
 
 		// number of data samples
-		int userNum = testingUserData.size();
-		int othersNum = othersData.size();
+		int positiveNum = positiveUserData.size();
+		int negativeNum = negativeUserData.size();
+
+		// create training data
+		int trainPosSamplesNum = Math.round(positiveNum * trainDataRatio);
+		int trainNegSamplesNum = Math.round(negativeNum * trainDataRatio);
+		generateData(trainingData, positiveUserData, negativeUserData, trainPosSamplesNum, trainNegSamplesNum);
 
 		// create train data
-		int trainUserSamplesNum = Math.round(userNum * trainDataRatio);
-		int trainOthersSamplesNum = Math.round(othersNum * trainDataRatio);
-		generateData(trainData, testingUserData, othersData, trainUserSamplesNum, trainOthersSamplesNum);
-
-		// create train data
-		int testUserSamplesNum = Math.round(userNum * testDataRatio);
-		int testOthersSamplesNum = Math.round(othersNum * testDataRatio);
-		generateData(testData, testingUserData, othersData, testUserSamplesNum, testOthersSamplesNum);
+		int testUserSamplesNum = Math.round(positiveNum * testDataRatio);
+		int testOthersSamplesNum = Math.round(negativeNum * testDataRatio);
+		generateData(testingData, positiveUserData, negativeUserData, testUserSamplesNum, testOthersSamplesNum);
 
 		// create verify data
-		generateData(verifyData, testingUserData, othersData, testingUserData.size(), othersData.size());
+		generateData(validationData, positiveUserData, negativeUserData, positiveUserData.size(), negativeUserData.size());
 
 	}
 
 	public String dataOverview() {
 		StringBuilder sb = new StringBuilder();
 
+		sb.append("Each sample has ");
+		sb.append(trainingData.get(0).getEntries().length);
+		sb.append(" values.\n");
 		sb.append("train data size: ");
-		sb.append(trainData.size());
-		sb.append("\n");
+		sb.append(trainingData.size());
+		sb.append(" samples\n");
 		sb.append("test data size: ");
-		sb.append(testData.size());
-		sb.append("\n");
+		sb.append(testingData.size());
+		sb.append(" samples\n");
 		sb.append("verify data size: ");
-		sb.append(verifyData.size());
-		sb.append("\n");
-		sb.append("\n");
-		sb.append("train data density: [");
-		for (Sample s : trainData) {
-			if (s.isTestingUserData()) {
+		sb.append(validationData.size());
+		sb.append(" samples\n\n");
+		sb.append("Data density (| positive user, - negative user)\n");
+		sb.append("training data density: [");
+		for (Sample s : trainingData) {
+			if (s.isPositiveUserData()) {
 				sb.append("|");
 			} else {
 				sb.append("-");
 			}
 		}
-		sb.append("]");
-		sb.append("\n");
-		sb.append("\n");
+		sb.append("]\n");
 
-		sb.append("test data density: [");
-		for (Sample s : testData) {
-			if (s.isTestingUserData()) {
+		sb.append("testing data density: [");
+		for (Sample s : testingData) {
+			if (s.isPositiveUserData()) {
 				sb.append("|");
 			} else {
 				sb.append("-");
 			}
 		}
-		sb.append("]");
-		sb.append("\n");
-		sb.append("\n");
-
-		sb.append("verify data density: [");
-		for (Sample s : verifyData) {
-			if (s.isTestingUserData()) {
+		sb.append("]\n");
+		sb.append("valifation data density: [");
+		for (Sample s : validationData) {
+			if (s.isPositiveUserData()) {
 				sb.append("|");
 			} else {
 				sb.append("-");
@@ -134,7 +123,12 @@ public class DataManager {
 		return sb.toString();
 	}
 
-	private List<Sample> getSamplesFromFile(File file, boolean isTestingUserData) throws IOException {
+	/**
+	 * The returned list of samples contains samples created of entries of that file.
+	 * WARNING: the Samples are always indented to the entriesForSample count, i.e. 
+	 * last (entriesInFile % entriesForSample) entries are thrown away
+	 */
+	private List<Sample> getSamplesFromFile(File file, int entriesForSample, boolean isPositiveUserData) throws IOException {
 		BufferedReader reader;
 
 		// prepare raw file dor reading
@@ -142,27 +136,28 @@ public class DataManager {
 
 		// initialize set of samples
 		List<Sample> listOfSamples = new ArrayList<>();
-		Sample sample = new Sample();
+		double[] entries = new double[3*entriesForSample];
+		int entryCount = 0;
 
 		String line = reader.readLine();
 		// for every line of file
 		while (line != null) {
-			if (line.isEmpty()) {
-				// new sample
-				listOfSamples.add(sample);
-				sample = new Sample();
-			} else {
+			if (entryCount < 3*entriesForSample) {
 				String[] coordinates = line.split(",");
 				// check if there are 3 coordinates
-				if (coordinates.length != 3) {
+				if (coordinates.length != 4) {
 					throw new IllegalStateException("The entry " + line + " has more coordinates than 3");
 				}
-				sample.add(new double[]{
-					Float.parseFloat(coordinates[0]),
-					Float.parseFloat(coordinates[1]),
-					Float.parseFloat(coordinates[2])
-				});
-				sample.setTestingUserData(isTestingUserData);
+				// the first coordinate (0) is time - we do not need it
+				entries[entryCount++] = Double.parseDouble(coordinates[1]);
+				entries[entryCount++] = Double.parseDouble(coordinates[2]);
+				entries[entryCount++] = Double.parseDouble(coordinates[3]);
+			} else {
+				// new sample
+				Sample sample = new Sample(isPositiveUserData, entries);
+				listOfSamples.add(sample);
+				// reset counter
+				entryCount = 0;
 			}
 			line = reader.readLine();
 		}
@@ -201,27 +196,27 @@ public class DataManager {
 	}
 
 	public List<Sample> getTrainData() {
-		return trainData;
+		return trainingData;
 	}
 
 	public void setTrainData(List<Sample> trainData) {
-		this.trainData = trainData;
+		this.trainingData = trainData;
 	}
 
 	public List<Sample> getTestData() {
-		return testData;
+		return testingData;
 	}
 
 	public void setTestData(List<Sample> testData) {
-		this.testData = testData;
+		this.testingData = testData;
 	}
 
 	public List<Sample> getVerifyData() {
-		return verifyData;
+		return validationData;
 	}
 
 	public void setVerifyData(List<Sample> verifyData) {
-		this.verifyData = verifyData;
+		this.validationData = verifyData;
 	}
 
 	

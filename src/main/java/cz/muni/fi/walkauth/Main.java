@@ -1,7 +1,6 @@
 package cz.muni.fi.walkauth;
 
 import cz.muni.fi.walkauth.preprocessing.DataManager;
-import cz.muni.fi.walkauth.preprocessing.Sampler;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Properties;
