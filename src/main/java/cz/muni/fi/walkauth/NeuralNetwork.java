@@ -30,11 +30,27 @@ public class NeuralNetwork {
 
         for (int layer : layers) {
             if (previous != 0) {
-                // add layer
-                this.layers.add(Matrix.random(layer, previous));
+                // add layer, +1 for bias
+                this.layers.add(Matrix.random(layer, previous + 1));
             }
             previous = layer;
         }
+    }
+
+    public NeuralNetwork(List<Matrix> layers) {
+        if (layers == null) {
+            throw new IllegalArgumentException("List of layer cannot be null.");
+        }
+        if (layers.size() < 2) {
+            throw new IllegalArgumentException("There must be atleas two layers of neurons.");
+        }
+        for (int i = 1; i < layers.size(); i++) {
+            // -1 for bias
+            if (layers.get(i).getColCount() - 1 != layers.get(i - 1).getRowCount()) {
+                throw new IllegalArgumentException("Not valid layers, matrix dimensions do not corresponds.");
+            }
+        }
+        this.layers.addAll(layers);
     }
 
     public List<Matrix> getLayers() {
@@ -64,15 +80,12 @@ public class NeuralNetwork {
      * @param neuronNumber position in layer
      * @param weightNumber position in neuron
      * @param weight weight to insert
+     *
+     * public void setNeuronWeight(int layer, int neuronNumber, int
+     * weightNumber, double weight) { if (layer == 0) { throw new
+     * IllegalArgumentException("Input neurons do not have weights."); } else {
+     * layers.get(layer - 1).set(neuronNumber, weightNumber, weight); } }
      */
-    public void setNeuronWeight(int layer, int neuronNumber, int weightNumber, double weight) {
-        if (layer == 0) {
-            throw new IllegalArgumentException("Input neurons do not have weights.");
-        } else {
-            layers.get(layer - 1).set(neuronNumber, weightNumber, weight);
-        }
-    }
-
     /**
      * Computes ouput values for the given input values.
      *
@@ -80,14 +93,36 @@ public class NeuralNetwork {
      * @return output values of ouput neurons
      */
     public Matrix compute(Matrix inputs) {
+        if (inputs == null) {
+            throw new IllegalArgumentException("Input cannot be null.");
+        }
+        // -1 for bias
+        if (inputs.getColCount() != 1 || inputs.getRowCount() != layers.get(0).getColCount() - 1) {
+            throw new IllegalArgumentException("Input matrix does not have required dimensions. "
+                    + "Got " + inputs.getRowCount() + "x" + inputs.getColCount()
+                    + " but expected " + (layers.get(0).getColCount()-1) + "x1.");
+        }
+
         Matrix output = inputs;
 
         for (Matrix layer : layers) {
             // sum all inputs and apply activation function
-            output = computeOutputs(layer.multiply(output));
+            output = computeOutputs(layer.multiply(addBias(output)));
+            System.out.println("midresult:\n" + output);
         }
 
         return output;
+    }
+
+    private Matrix addBias(Matrix input) {
+        double[][] newInput = new double[input.getRowCount() + 1][1];
+        newInput[0][0] = 1;
+
+        for (int i = 0; i < input.getRowCount(); i++) {
+            newInput[i + 1][0] = input.getValues()[i][0];
+        }
+
+        return new Matrix(newInput);
     }
 
     /**
@@ -97,9 +132,13 @@ public class NeuralNetwork {
      * @return matrix with neurons' outputs
      */
     private Matrix computeOutputs(Matrix potentials) {
-        for (int i = 0; i < potentials.getColCount(); i++) {
-            double potential = potentials.get(0, i);
-            potentials.set(0, i, ActivationUtils.activationFunction(potential));
+        if (potentials == null) {
+            throw new IllegalArgumentException("Potetial matrix cannot be null.");
+        }
+        System.out.println("potetials:\n" + potentials);
+        for (int i = 0; i < potentials.getRowCount(); i++) {
+            double potential = potentials.get(i, 0);
+            potentials.set(i, 0, ActivationUtils.activationFunction(potential));
         }
 
         return potentials;
@@ -117,7 +156,8 @@ public class NeuralNetwork {
         }
 
         for (Matrix layer : layers) {
-            sb.append("\n" + layer.toString());
+            sb.append("\n");
+            sb.append(layer.toString());
         }
 
         return sb.toString();

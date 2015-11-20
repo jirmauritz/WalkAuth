@@ -48,6 +48,10 @@ public final class Matrix {
         this.values = new double[n][m];
     }
 
+    public double[][] getValues() {
+        return values;
+    }
+
     /**
      * Static factory for an identity matrix.
      *
@@ -111,7 +115,7 @@ public final class Matrix {
         double[][] values = new double[n][m];
         for (int i = 0; i < n; i++) {
             for (int j = 0; j < m; j++) {
-                values[i][j] = Math.random();
+                values[i][j] = (Math.random() - 0.5) / 0.5;
             }
         }
         return new Matrix(values);
