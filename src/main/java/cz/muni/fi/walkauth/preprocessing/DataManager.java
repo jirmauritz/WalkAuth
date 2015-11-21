@@ -15,11 +15,14 @@ import java.util.Random;
  */
 public class DataManager {
 
+	// normalization
+	private Normalization normalization = new Normalization();
+	
 	// data
 	private List<Sample> trainingData;
 	private List<Sample> testingData;
 	private List<Sample> validationData;
-
+	
 	public void prepareData(
 			int entriesForSample,
 			String dataPath,
@@ -72,7 +75,17 @@ public class DataManager {
 
 		// create verify data
 		generateData(validationData, positiveUserData, negativeUserData, positiveUserData.size(), negativeUserData.size());
-
+		
+		// normalization		
+		List<Sample> allInOne = new ArrayList<>(trainingData);
+		allInOne.addAll(testingData);
+		allInOne.addAll(validationData);
+		// compute mean and deviation from all
+		normalization.computeMeanAndDeviation(allInOne);
+		// normalize each
+		trainingData = normalization.normalize(trainingData);
+		testingData = normalization.normalize(testingData);
+		validationData = normalization.normalize(validationData);
 	}
 
 	public String dataOverview() {
@@ -90,6 +103,11 @@ public class DataManager {
 		sb.append("verify data size: ");
 		sb.append(validationData.size());
 		sb.append(" samples\n\n");
+		sb.append("Original mean value: ");
+		sb.append(normalization.getMean());
+		sb.append(", original standart deviation: ");
+		sb.append(normalization.getDeviation());
+		sb.append("\n\n");				
 		sb.append("Data density (| positive user, - negative user)\n");
 		sb.append("training data density: [");
 		for (Sample s : trainingData) {
@@ -118,7 +136,14 @@ public class DataManager {
 				sb.append("-");
 			}
 		}
-		sb.append("]");
+		sb.append("]\n\n");
+		sb.append("Example of first positive testing sample: [");
+		for (int i=0; i<5; i++) {
+			sb.append(testingData.get(0).getEntries()[i]);
+			sb.append(", ");
+		}
+		sb.append(testingData.get(0).getEntries()[5]);
+		sb.append(", ...");
 
 		return sb.toString();
 	}
@@ -219,6 +244,7 @@ public class DataManager {
 		this.validationData = verifyData;
 	}
 
-	
-	
+	public Normalization getNormalization() {
+		return normalization;
+	}	
 }
