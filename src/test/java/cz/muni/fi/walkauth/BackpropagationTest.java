@@ -39,8 +39,8 @@ public class BackpropagationTest {
 		NeuralNetwork neuralNetwork = new NeuralNetwork(1, 1);
 		List<Sample> data = null;//Arrays.asList(Sample([1], true));
 		List<Matrix> gradient = NeuralNetworkLearning.backpropagation(neuralNetwork, data);
-		double[][] g1 = {{0.0}, {0.0}};
-		assertEquals(Arrays.asList(new Matrix(g1)), gradient);
+		//double[][] g1 = {{0.0}, {0.0}};
+		assertEquals(Arrays.asList(new Matrix(new double[][] {{0.0}, {0.0}})), gradient);
 	}
 	
 }

@@ -35,7 +35,6 @@ public class MathUtilsTest {
 	 */
 	@org.junit.Test
 	public void testSquareError() {
-		System.out.println("hyperbolicTangens");
 		double[] predictedValues = {1.1, 1.2, -0.8};
 		double[] actualValues = {1.3, 1.2, -0.85};
 		double expError = 0.02125;

@@ -7,8 +7,8 @@ import static java.lang.Math.tanh;
  */
 public class ActivationUtils {
 
-	private static final double AMPLITUDE = 1.7159;
-	private static final double FREQUENCY = 0.6666667;
+	static final double AMPLITUDE = 1.7159;
+	static final double FREQUENCY = 0.6666667;
 
 	private ActivationUtils() {
 		throw new AssertionError("This is a noninstantiable utility class.");

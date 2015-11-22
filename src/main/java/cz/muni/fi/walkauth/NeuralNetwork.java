@@ -1,5 +1,6 @@
 package cz.muni.fi.walkauth;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
@@ -16,6 +17,13 @@ public class NeuralNetwork {
      * list of matricies that hold weights of every link between two neurons
      */
     private final List<Matrix> layers = new LinkedList<>();
+	
+	// some useful instances
+	public static final NeuralNetwork IDENTITY = new NeuralNetwork(
+		Arrays.asList(
+			new Matrix(new double[][] {{0.0, 1.0}})
+		)
+	);
 
     /**
      * Creates a neural network with the given layer layout and random weights
