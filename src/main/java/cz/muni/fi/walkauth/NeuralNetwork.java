@@ -16,14 +16,14 @@ public class NeuralNetwork {
     /**
      * list of matricies that hold weights of every link between two neurons
      */
-    private final List<Matrix> layers = new LinkedList<>();
-	
-	// some useful instances
-	public static final NeuralNetwork IDENTITY = new NeuralNetwork(
-		Arrays.asList(
-			new Matrix(new double[][] {{0.0, 1.0}})
-		)
-	);
+    private List<Matrix> layers = new LinkedList<>();
+
+    // some useful instances
+    public static final NeuralNetwork IDENTITY = new NeuralNetwork(
+            Arrays.asList(
+                    new Matrix(new double[][]{{0.0, 1.0}})
+            )
+    );
 
     /**
      * Creates a neural network with the given layer layout and random weights
@@ -49,8 +49,8 @@ public class NeuralNetwork {
         if (layers == null) {
             throw new IllegalArgumentException("List of layer cannot be null.");
         }
-        if (layers.size() < 2) {
-            throw new IllegalArgumentException("There must be atleas two layers of neurons.");
+        if (layers.size() < 1) {
+            throw new IllegalArgumentException("There must be atleas one layer of neurons.");
         }
         for (int i = 1; i < layers.size(); i++) {
             // -1 for bias
@@ -63,6 +63,10 @@ public class NeuralNetwork {
 
     public List<Matrix> getLayers() {
         return Collections.unmodifiableList(layers);
+    }
+
+    public void setLayers(List<Matrix> layers) {
+        this.layers = layers;
     }
 
     /**
@@ -100,7 +104,7 @@ public class NeuralNetwork {
      * @param inputs input values
      * @return output values of ouput neurons
      */
-    public Matrix compute(Matrix inputs) {
+    public Matrix computeOutputs(Matrix inputs) {
         if (inputs == null) {
             throw new IllegalArgumentException("Input cannot be null.");
         }
@@ -108,20 +112,40 @@ public class NeuralNetwork {
         if (inputs.getColCount() != 1 || inputs.getRowCount() != layers.get(0).getColCount() - 1) {
             throw new IllegalArgumentException("Input matrix does not have required dimensions. "
                     + "Got " + inputs.getRowCount() + "x" + inputs.getColCount()
-                    + " but expected " + (layers.get(0).getColCount()-1) + "x1.");
+                    + " but expected " + (layers.get(0).getColCount() - 1) + "x1.");
         }
 
-        Matrix output = inputs;
+        Matrix outputs = inputs;
 
         for (Matrix layer : layers) {
             // sum all inputs and apply activation function
-            output = computeOutputs(layer.multiply(addBias(output)));
-            System.out.println("midresult:\n" + output);
+            outputs = potentialsToOutputs(layer.multiply(addBias(outputs)));
+
         }
 
-        return output;
+        return outputs;
     }
 
+    /**
+     * Coumputes output value in case there is only one output neuron.
+     *
+     * @param inputs vector of input values
+     * @return output of the only output neuron
+     */
+    public double computeOutput(Matrix inputs) {
+        if (layers.get(layers.size() - 1).getRowCount() != 1) {
+            throw new UnsupportedOperationException("This neural network has more the one output neuron.");
+        }
+        Matrix result = computeOutputs(inputs);
+        return result.get(0, 0);
+    }
+
+    /**
+     * Adds bias to input for the next layer as the first item of vector
+     *
+     * @param input input to be modified
+     * @return input with bais as the first element of the vector
+     */
     private Matrix addBias(Matrix input) {
         double[][] newInput = new double[input.getRowCount() + 1][1];
         newInput[0][0] = 1;
@@ -139,11 +163,11 @@ public class NeuralNetwork {
      * @param potentials potentials of neurons
      * @return matrix with neurons' outputs
      */
-    private Matrix computeOutputs(Matrix potentials) {
+    private Matrix potentialsToOutputs(Matrix potentials) {
         if (potentials == null) {
             throw new IllegalArgumentException("Potetial matrix cannot be null.");
         }
-        System.out.println("potetials:\n" + potentials);
+
         for (int i = 0; i < potentials.getRowCount(); i++) {
             double potential = potentials.get(i, 0);
             potentials.set(i, 0, ActivationUtils.activationFunction(potential));

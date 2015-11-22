@@ -164,7 +164,14 @@ public final class Matrix {
      * @return new matrix with is the result of the addition
      */
     public Matrix add(Matrix other) {
-        throw new UnsupportedOperationException("Not implemented yet.");
+        double[][] newValues = new double[n][m];
+        
+        for(int i = 0; i < n; i++) {
+            for(int j = 0; j < m; j++) {
+                newValues[i][j] = values[i][j] + other.get(i, j);
+            }
+        }
+        return new Matrix(newValues);
     }
 
     /**
@@ -227,7 +234,14 @@ public final class Matrix {
      * @return new matrix with is the result of the multiplication
      */
     public Matrix multiplyByScalar(double scalar) {
-        throw new UnsupportedOperationException("Not implemented yet.");
+        double[][] newValues = new double[n][m];
+        
+        for(int i = 0; i < n; i++) {
+            for(int j = 0; j < m; j++) {
+                newValues[i][j] = values[i][j] * scalar;
+            }
+        }
+        return new Matrix(newValues);
     }
 
     /**
