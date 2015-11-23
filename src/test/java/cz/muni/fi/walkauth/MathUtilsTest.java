@@ -1,39 +1,18 @@
 package cz.muni.fi.walkauth;
 
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import static org.junit.Assert.*;
+import static org.testng.Assert.*;
+import org.testng.annotations.Test;
 
 /**
  * Unit test for MathUtils.
  */
 public class MathUtilsTest {
-	
-	public MathUtilsTest() {
-	}
-	
-	@BeforeClass
-	public static void setUpClass() {
-	}
-	
-	@AfterClass
-	public static void tearDownClass() {
-	}
-	
-	@Before
-	public void setUp() {
-	}
-	
-	@After
-	public void tearDown() {
-	}
+
 
 	/**
 	 * Test of squareError method.
 	 */
-	@org.junit.Test
+	@Test
 	public void testSquareError() {
 		double[] predictedValues = {1.1, 1.2, -0.8};
 		double[] actualValues = {1.3, 1.2, -0.85};

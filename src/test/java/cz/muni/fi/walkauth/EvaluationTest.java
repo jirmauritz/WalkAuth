@@ -1,11 +1,9 @@
 package cz.muni.fi.walkauth;
 
 import cz.muni.fi.walkauth.preprocessing.Sample;
-import java.util.Arrays;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import static org.junit.Assert.*;
+import static org.testng.Assert.*;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Test;
 
 /**
  * Unit test for neural network evaluation.
@@ -14,12 +12,8 @@ public class EvaluationTest {
 
 	private static final double EPSILON = 0.001;
 
-	@Before
+	@BeforeMethod
 	public void setUp() {
-	}
-
-	@After
-	public void tearDown() {
 	}
 
 	/**

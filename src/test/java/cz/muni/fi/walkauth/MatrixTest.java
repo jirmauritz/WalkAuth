@@ -1,8 +1,9 @@
 package cz.muni.fi.walkauth;
 
-import org.junit.Before;
-import org.junit.Test;
-import static org.junit.Assert.*;
+import static org.testng.Assert.*;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Test;
+
 
 /**
  * Unit test for Matrix class.
@@ -14,7 +15,7 @@ public class MatrixTest {
 	public MatrixTest() {
 	}
 
-	@Before
+	@BeforeMethod
 	public void setUp() {
 		double[][] values1 = {{1.1, 1.2}, {2.3, 3.4}, {-1.5, -0.2}};
 		m1 = new Matrix(values1);
@@ -62,13 +63,13 @@ public class MatrixTest {
 
 		Matrix product = m1.multiply(m2);
 
-		assertEquals("Product have unexpected number of rows.", 3, product.getRowCount());
-		assertEquals("Product have unexpected number of columns.", 3, product.getColCount());
+		assertEquals(3, product.getRowCount(), "Product have unexpected number of rows.");
+		assertEquals(3, product.getColCount(), "Product have unexpected number of columns.");
 
 		for (int i = 0; i < product.getRowCount(); i++) {
 			for (int j = 0; j < product.getColCount(); j++) {
-				assertTrue("Unexpected value on row " + i + " column " + j + ".",
-					Math.abs(product.get(i, j) - expected.get(i, j)) < epsilon);
+				assertTrue(Math.abs(product.get(i, j) - expected.get(i, j)) < epsilon,
+					"Unexpected value on row " + i + " column " + j + ".");
 			}
 		}
 	}
@@ -76,7 +77,7 @@ public class MatrixTest {
 	/**
 	 * Test of multiply method, of class Matrix.
 	 */
-	@Test(expected = IllegalArgumentException.class)
+	@Test(expectedExceptions = IllegalArgumentException.class)
 	public void testMultiplyWrongDimensions() {
 		m1.multiply(m1);
 	}
