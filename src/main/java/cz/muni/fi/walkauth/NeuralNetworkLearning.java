@@ -1,7 +1,6 @@
 package cz.muni.fi.walkauth;
 
 import cz.muni.fi.walkauth.preprocessing.Sample;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.function.Function;
 
@@ -22,34 +21,48 @@ public class NeuralNetworkLearning {
         return null;
     }
 
-    public static NeuralNetwork gradienDescent(NeuralNetwork neuralNetwork, List<Matrix> trainingData, List<Matrix> trainingOutputs, List<Matrix> validationData, List<Matrix> validationOutput, double acceptableError, Function<Integer, Double> learningSpeed) {
+    /**
+     * Gradient descent algorithm for neural network training.
+     *
+     * @param neuralNetwork neural network that is to be trained
+     * @param trainingData array of training input vectors
+     * @param trainingOutputs array of training output vectors
+     * @param validationData array of valdation input vectors
+     * @param validationOutput array of validation output vectors
+     * @param acceptableError maximal acceptable error
+     * @param learningSpeed function that for the given number of passes returns
+     * learning speed (epsilon from slides)
+     * @return
+     */
+    public static NeuralNetwork gradienDescent(NeuralNetwork neuralNetwork, Matrix[] trainingData, Matrix[] trainingOutputs, Matrix[] validationData, Matrix[] validationOutput, double acceptableError, Function<Integer, Double> learningSpeed) {
         double error = 0;
-        int step = 0; 
-        
+        int step = 0;
+        int numberOfLayers = neuralNetwork.getLayers().length;
+
         NeuralNetwork trainedNeuralNetwork = new NeuralNetwork(neuralNetwork.getLayers());
 
-        for (int i = 0; i < trainingData.size(); i++) {
-            error += computeError(trainedNeuralNetwork, trainingData.get(i), trainingOutputs.get(i));
+        for (int i = 0; i < trainingData.length; i++) {
+            error += computeError(trainedNeuralNetwork, trainingData[i], trainingOutputs[i]);
         }
 
         while (error > acceptableError) {
             error = 0;
             step++;
 
-            List<Matrix> newLayers = new LinkedList<>();
+            Matrix[] newLayers = new Matrix[numberOfLayers];
             List<Matrix> derivations = backpropagation(trainedNeuralNetwork, null);
-            
-            for (int i = 0; i < trainedNeuralNetwork.getLayers().size(); i++) {
+
+            for (int i = 0; i < numberOfLayers; i++) {
                 double speed = learningSpeed.apply(step);
                 Matrix derivation = derivations.get(i);
-                Matrix m = trainedNeuralNetwork.getLayers().get(i).add(derivation.multiplyByScalar(speed));
-                newLayers.add(m);
+                Matrix m = trainedNeuralNetwork.getLayers()[i].add(derivation.multiplyByScalar(speed));
+                newLayers[i] = m;
             }
-            
+
             trainedNeuralNetwork.setLayers(newLayers);
 
-            for (int i = 0; i < trainingData.size(); i++) {
-                error += computeError(trainedNeuralNetwork, trainingData.get(i), trainingOutputs.get(i));
+            for (int i = 0; i < trainingData.length; i++) {
+                error += computeError(trainedNeuralNetwork, trainingData[i], trainingOutputs[i]);
             }
         }
 

@@ -1,9 +1,6 @@
 package cz.muni.fi.walkauth;
 
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
 
 /**
  * Class that represents neural network. It can have various number of neurons
@@ -16,13 +13,13 @@ public class NeuralNetwork {
     /**
      * list of matricies that hold weights of every link between two neurons
      */
-    private List<Matrix> layers = new LinkedList<>();
+    private Matrix[] layers;
 
     // some useful instances
     public static final NeuralNetwork IDENTITY = new NeuralNetwork(
-            Arrays.asList(
-                    new Matrix(new double[][]{{0.0, 1.0}})
-            )
+            new Matrix[]{
+                new Matrix(new double[][]{{0.0, 1.0}})
+            }
     );
 
     /**
@@ -33,40 +30,48 @@ public class NeuralNetwork {
      * 2)
      */
     public NeuralNetwork(int... layers) {
+        this.layers = new Matrix[layers.length];
         // size of previous layer
         int previous = 0;
 
-        for (int layer : layers) {
+        for (int i = 0; i < layers.length; i++) {
             if (previous != 0) {
                 // add layer, +1 for bias
-                this.layers.add(Matrix.random(layer, previous + 1));
+                this.layers[i] = Matrix.random(layers[i], previous + 1);
             }
-            previous = layer;
+            previous = layers[i];
         }
     }
 
-    public NeuralNetwork(List<Matrix> layers) {
+    public NeuralNetwork(Matrix[] layers) {
         if (layers == null) {
             throw new IllegalArgumentException("List of layer cannot be null.");
         }
-        if (layers.size() < 1) {
+        if (layers.length < 1) {
             throw new IllegalArgumentException("There must be atleas one layer of neurons.");
         }
-        for (int i = 1; i < layers.size(); i++) {
+        for (int i = 1; i < layers.length; i++) {
             // -1 for bias
-            if (layers.get(i).getColCount() - 1 != layers.get(i - 1).getRowCount()) {
+            if (layers[i].getColCount() - 1 != layers[i - 1].getRowCount()) {
                 throw new IllegalArgumentException("Not valid layers, matrix dimensions do not corresponds.");
             }
         }
-        this.layers.addAll(layers);
+        this.layers = Arrays.copyOf(layers, layers.length);
     }
 
-    public List<Matrix> getLayers() {
-        return Collections.unmodifiableList(layers);
+    public Matrix[] getLayers() {
+        return Arrays.copyOf(this.layers, this.layers.length);
     }
 
-    public void setLayers(List<Matrix> layers) {
-        this.layers = layers;
+    public void setLayers(Matrix[] layers) {
+        for (int i = 1; i < layers.length; i++) {
+            // -1 for bias
+            if (layers[i].getColCount() - 1 != layers[i - 1].getRowCount()) {
+                throw new IllegalArgumentException("Not valid layers, matrix dimensions do not corresponds.");
+            }
+        }
+
+        this.layers = Arrays.copyOf(layers, layers.length);
     }
 
     /**
@@ -81,7 +86,7 @@ public class NeuralNetwork {
         if (layer == 0) {
             throw new IllegalArgumentException("Input neurons do not have weights.");
         } else {
-            return layers.get(layer - 1).get(neuronNumber, weightNumber);
+            return layers[layer - 1].get(neuronNumber, weightNumber);
         }
     }
 
@@ -109,10 +114,10 @@ public class NeuralNetwork {
             throw new IllegalArgumentException("Input cannot be null.");
         }
         // -1 for bias
-        if (inputs.getColCount() != 1 || inputs.getRowCount() != layers.get(0).getColCount() - 1) {
+        if (inputs.getColCount() != 1 || inputs.getRowCount() != layers[0].getColCount() - 1) {
             throw new IllegalArgumentException("Input matrix does not have required dimensions. "
                     + "Got " + inputs.getRowCount() + "x" + inputs.getColCount()
-                    + " but expected " + (layers.get(0).getColCount() - 1) + "x1.");
+                    + " but expected " + (layers[0].getColCount() - 1) + "x1.");
         }
 
         Matrix outputs = inputs;
@@ -133,7 +138,7 @@ public class NeuralNetwork {
      * @return output of the only output neuron
      */
     public double computeOutput(Matrix inputs) {
-        if (layers.get(layers.size() - 1).getRowCount() != 1) {
+        if (layers[layers.length - 1].getRowCount() != 1) {
             throw new UnsupportedOperationException("This neural network has more the one output neuron.");
         }
         Matrix result = computeOutputs(inputs);
@@ -180,11 +185,11 @@ public class NeuralNetwork {
     public String toString() {
         StringBuilder sb = new StringBuilder("NeuralNetwork with topology topology ");
 
-        sb.append(layers.get(0).getColCount());
+        sb.append(layers[0].getColCount());
 
-        for (int i = 0; i < layers.size(); i++) {
+        for (Matrix layer : layers) {
             sb.append("-");
-            sb.append(layers.get(i).getRowCount());
+            sb.append(layer.getRowCount());
         }
 
         for (Matrix layer : layers) {
