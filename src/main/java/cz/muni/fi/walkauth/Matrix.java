@@ -51,6 +51,17 @@ public final class Matrix {
     public double[][] getValues() {
         return values;
     }
+	
+    /**
+     * Static factory for a row vector.
+     *
+     * @param values items of the vector
+     * @return 1-m matrix representing a row vector with given values
+     */
+    public static Matrix rowVector(double[] values) {
+		double[][] values2d = {values};
+        return new Matrix(values2d);
+    }
 
     /**
      * Static factory for an identity matrix.

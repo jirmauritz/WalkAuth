@@ -1,9 +1,13 @@
 package cz.muni.fi.walkauth;
 
 import cz.muni.fi.walkauth.preprocessing.Sample;
+import static org.mockito.Matchers.any;
 import static org.testng.Assert.*;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
+import org.mockito.Mock;
+import static org.mockito.Mockito.when;
+import org.mockito.MockitoAnnotations;
 
 /**
  * Unit test for neural network evaluation.
@@ -11,9 +15,30 @@ import org.testng.annotations.Test;
 public class EvaluationTest {
 
 	private static final double EPSILON = 0.001;
+	
+	@Mock
+	private NeuralNetwork positiveNeuralNetwork;
+	
+	@Mock
+	private NeuralNetwork halfPositiveNeuralNetwork;
+	
+	@Mock
+	private NeuralNetwork neutralNeuralNetwork;
+	
+	@Mock
+	private NeuralNetwork negativeNeuralNetwork;
+	
+	private final double[] ANY_INPUT = new double[]{0};
+	private final Sample[] onePositiveSample = {new Sample(true, ANY_INPUT)};
+	private final Sample[] oneNegativeSample = {new Sample(false, ANY_INPUT)};
 
 	@BeforeMethod
 	public void setUp() {
+		MockitoAnnotations.initMocks(this);
+		when(positiveNeuralNetwork.computeOutput(any(Matrix.class))).thenReturn(1.0);
+		when(halfPositiveNeuralNetwork.computeOutput(any(Matrix.class))).thenReturn(0.5);
+		when(neutralNeuralNetwork.computeOutput(any(Matrix.class))).thenReturn(0.0);
+		when(negativeNeuralNetwork.computeOutput(any(Matrix.class))).thenReturn(-1.0);
 	}
 
 	/**
@@ -33,10 +58,9 @@ public class EvaluationTest {
 	 */
 	@Test
 	public void testComputeErrorTruePositive() {
-		NeuralNetwork neuralNetwork = NeuralNetwork.IDENTITY;
-		Sample[] samples = new Sample[]{new Sample(true, new double[]{ActivationUtils.AMPLITUDE})};
-		double result = Evaluation.computeError(neuralNetwork, samples);
-		assertEquals(0.0, result, EPSILON);
+		Sample[] samples = {new Sample(true, ANY_INPUT)};
+		double result = Evaluation.computeError(positiveNeuralNetwork, samples);
+		assertEquals(result, 0.0, EPSILON);
 	}
 
 	/**
@@ -44,10 +68,9 @@ public class EvaluationTest {
 	 */
 	@Test
 	public void testComputeErrorTrueNegative() {
-		NeuralNetwork neuralNetwork = NeuralNetwork.IDENTITY;
-		Sample[] samples = new Sample[]{new Sample(false, new double[]{-ActivationUtils.AMPLITUDE})};
-		double result = Evaluation.computeError(neuralNetwork, samples);
-		assertEquals(0.0, result, EPSILON);
+		Sample[] samples = {new Sample(false, ANY_INPUT)};
+		double result = Evaluation.computeError(negativeNeuralNetwork, samples);
+		assertEquals(result, 0.0, EPSILON);
 	}
 
 	/**
@@ -55,11 +78,11 @@ public class EvaluationTest {
 	 * greater than 0.
 	 */
 	@Test
-	public void testComputeErrorFalsePositive() {
+	public void testComputeErrorFalsePositiveNegativeGreaterThanZero() {
 		NeuralNetwork neuralNetwork = NeuralNetwork.IDENTITY;
-		Sample[] samples1 = new Sample[]{new Sample(false, new double[]{ActivationUtils.AMPLITUDE})};
+		Sample[] samples1 = {new Sample(false, ANY_INPUT)};
 		double result1 = Evaluation.computeError(neuralNetwork, samples1);
-		Sample[] samples2 = new Sample[]{new Sample(true, new double[]{-ActivationUtils.AMPLITUDE})};
+		Sample[] samples2 = {new Sample(true, ANY_INPUT)};
 		double result2 = Evaluation.computeError(neuralNetwork, samples2);
 		assertEquals(result1, result2, EPSILON);
 		assertTrue(result1 > 0.0 + EPSILON);
@@ -70,29 +93,17 @@ public class EvaluationTest {
 	 */
 	@Test
 	public void testComputeErrorMonoticity() {
-		NeuralNetwork neuralNetwork = NeuralNetwork.IDENTITY;
-
-		Sample[] samples1 = new Sample[]{new Sample(true, new double[]{ActivationUtils.AMPLITUDE})};
-		Sample[] samples2 = new Sample[]{new Sample(true, new double[]{0.5 * ActivationUtils.AMPLITUDE})};
-		Sample[] samples3 = new Sample[]{new Sample(true, new double[]{0.0})};
-		Sample[] samples4 = new Sample[]{new Sample(true, new double[]{-0.5 * ActivationUtils.AMPLITUDE})};
-
-		double result1 = Evaluation.computeError(neuralNetwork, samples1);
-		double result2 = Evaluation.computeError(neuralNetwork, samples2);
-		double result3 = Evaluation.computeError(neuralNetwork, samples3);
-		double result4 = Evaluation.computeError(neuralNetwork, samples4);
+		double result1 = Evaluation.computeError(positiveNeuralNetwork, onePositiveSample);
+		double result2 = Evaluation.computeError(halfPositiveNeuralNetwork, onePositiveSample);
+		double result3 = Evaluation.computeError(neutralNeuralNetwork, onePositiveSample);
+		double result4 = Evaluation.computeError(negativeNeuralNetwork, onePositiveSample);
 
 		assertTrue(result1 < result2 && result2 < result3 && result3 < result4);
 
-		Sample[] samples5 = new Sample[]{new Sample(false, new double[]{-ActivationUtils.AMPLITUDE})};
-		Sample[] samples6 = new Sample[]{new Sample(false, new double[]{-0.5 * ActivationUtils.AMPLITUDE})};
-		Sample[] samples7 = new Sample[]{new Sample(false, new double[]{0.0})};
-		Sample[] samples8 = new Sample[]{new Sample(false, new double[]{0.5 * ActivationUtils.AMPLITUDE})};
-
-		double result5 = Evaluation.computeError(neuralNetwork, samples5);
-		double result6 = Evaluation.computeError(neuralNetwork, samples6);
-		double result7 = Evaluation.computeError(neuralNetwork, samples7);
-		double result8 = Evaluation.computeError(neuralNetwork, samples8);
+		double result5 = Evaluation.computeError(negativeNeuralNetwork, oneNegativeSample);
+		double result6 = Evaluation.computeError(neutralNeuralNetwork, oneNegativeSample);
+		double result7 = Evaluation.computeError(halfPositiveNeuralNetwork, oneNegativeSample);
+		double result8 = Evaluation.computeError(positiveNeuralNetwork, oneNegativeSample);
 
 		assertTrue(result5 < result6 && result6 < result7 && result7 < result8);
 	}
@@ -102,20 +113,24 @@ public class EvaluationTest {
 	 * computed and expected result.
 	 */
 	@Test
-	public void testComputeErrorSquareValues() {
-		NeuralNetwork neuralNetwork = NeuralNetwork.IDENTITY;
-
-		Sample[] samples1 = new Sample[]{new Sample(true, new double[]{ActivationUtils.AMPLITUDE - 1})};
-		double result1 = Evaluation.computeError(neuralNetwork, samples1);
-		assertEquals(0.5, result1, EPSILON);
-
-		Sample[] samples2 = new Sample[]{new Sample(true, new double[]{ActivationUtils.AMPLITUDE - 2})};
-		double result2 = Evaluation.computeError(neuralNetwork, samples2);
-		assertEquals(2.0, result2, EPSILON);
-
-		Sample[] samples3 = new Sample[]{new Sample(false, new double[]{-ActivationUtils.AMPLITUDE + 3})};
-		double result3 = Evaluation.computeError(neuralNetwork, samples3);
-		assertEquals(4.5, result3, EPSILON);
+	public void testComputeErrorSquareValues() {				
+		double result1 = Evaluation.computeError(halfPositiveNeuralNetwork, onePositiveSample);
+		assertEquals(result1, 0.125, EPSILON);
+		
+		double result2 = Evaluation.computeError(neutralNeuralNetwork, onePositiveSample);
+		assertEquals(result2, 0.5, EPSILON);
+		
+		double result3 = Evaluation.computeError(negativeNeuralNetwork, onePositiveSample);
+		assertEquals(result3, 2.0, EPSILON);
+		
+		double result4 = Evaluation.computeError(neutralNeuralNetwork, oneNegativeSample);
+		assertEquals(result4, 0.5, EPSILON);
+		
+		double result5 = Evaluation.computeError(halfPositiveNeuralNetwork, oneNegativeSample);
+		assertEquals(result5, 1.125, EPSILON);
+		
+		double result6 = Evaluation.computeError(positiveNeuralNetwork, oneNegativeSample);
+		assertEquals(result6, 2.0, EPSILON);
 	}
 
 	/**
