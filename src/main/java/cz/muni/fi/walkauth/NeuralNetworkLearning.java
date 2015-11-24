@@ -17,8 +17,17 @@ public class NeuralNetworkLearning {
      * @param data data for evaluating the error
      * @return partial derivatives of error function with respect to each weight
      */
-    public static List<Matrix> backpropagation(NeuralNetwork neuralNetwork, List<Sample> data) {
-        return null;
+    public static Matrix[] backpropagation(NeuralNetwork neuralNetwork, Sample[] data) {
+		Matrix[] weights = neuralNetwork.getLayers();
+		int layersCount = weights.length;
+		
+		// initialize gradient to zero
+		Matrix[] gradient = new Matrix[layersCount];
+		for (int i = 0; i < layersCount; i++) {
+			gradient[i] = Matrix.zeros(weights[i].getRowCount(), weights[i].getColCount());
+		}
+		
+        return gradient;
     }
 
     /**
@@ -50,11 +59,11 @@ public class NeuralNetworkLearning {
             step++;
 
             Matrix[] newLayers = new Matrix[numberOfLayers];
-            List<Matrix> derivations = backpropagation(trainedNeuralNetwork, null);
+            Matrix[] derivations = backpropagation(trainedNeuralNetwork, null);
 
             for (int i = 0; i < numberOfLayers; i++) {
                 double speed = learningSpeed.apply(step);
-                Matrix derivation = derivations.get(i);
+                Matrix derivation = derivations[i];
                 Matrix m = trainedNeuralNetwork.getLayers()[i].add(derivation.multiplyByScalar(speed));
                 newLayers[i] = m;
             }

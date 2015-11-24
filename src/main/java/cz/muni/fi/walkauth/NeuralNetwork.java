@@ -22,24 +22,37 @@ public class NeuralNetwork {
             }
     );
 
-    /**
-     * Creates a neural network with the given layer layout and random weights
-     * between 0 and 1. Every neuron is conneted to every other.
+//    /**
+//     * Creates a neural network with the given layer layout and random weights
+//     * between 0 and 1. Every neuron is conneted to every other.
+//     *
+//     * @param layers sequence of integers corresponding to layer sizes (e.g. 2 3
+//     * 2)
+//     */
+//    public NeuralNetwork(int... layers) {
+//        this.layers = new Matrix[layers.length - 1];
+//        // size of previous layer
+//        int previous = 0;
+//
+//        for (int i = 0; i < layers.length; i++) {
+//            if (previous != 0) {
+//                // add layer, +1 for bias
+//                this.layers[i] = Matrix.random(layers[i], previous + 1);
+//            }
+//            previous = layers[i];
+//        }
+//    }
+	
+	 /**
+     * Creates a neural network with the given layer counts.
+     * The weights are not initialized.
      *
-     * @param layers sequence of integers corresponding to layer sizes (e.g. 2 3
-     * 2)
+     * @param layerSizes size of each layer, including the input one
      */
-    public NeuralNetwork(int... layers) {
-        this.layers = new Matrix[layers.length];
-        // size of previous layer
-        int previous = 0;
-
-        for (int i = 0; i < layers.length; i++) {
-            if (previous != 0) {
-                // add layer, +1 for bias
-                this.layers[i] = Matrix.random(layers[i], previous + 1);
-            }
-            previous = layers[i];
+    public NeuralNetwork(int... layerSizes) {
+        this.layers = new Matrix[layerSizes.length - 1];
+        for (int i = 0; i < this.layers.length; i++) {
+			this.layers[i] = new Matrix(layerSizes[i + 1], layerSizes[i] + 1);
         }
     }
 
