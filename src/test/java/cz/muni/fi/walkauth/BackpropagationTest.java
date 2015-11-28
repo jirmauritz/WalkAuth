@@ -124,8 +124,7 @@ public class BackpropagationTest {
 	 * Compare backpropagation result to gradient computed numerically.
 	 */
 	@Test
-	public void testBackpropagationNumericCheck1() {
-		// zero gradient
+	public void testBackpropagationNumericCheckZeroGradient() {
 		Matrix[] weights = {
 			new Matrix(new double[][]{{1.0, 0.0}})
 		};
@@ -139,7 +138,7 @@ public class BackpropagationTest {
 	 * Compare backpropagation result to gradient computed numerically.
 	 */
 	@Test
-	public void testBackpropagationNumericCheck2() {
+	public void testBackpropagationNumericCheckZeroWeights() {
 		Matrix[] weights = {
 			new Matrix(new double[][]{{0.0, 0.0}})
 		};
@@ -154,7 +153,7 @@ public class BackpropagationTest {
 	 * Compare backpropagation result to gradient computed numerically.
 	 */
 	@Test
-	public void testBackpropagationNumericCheck3() {
+	public void testBackpropagationNumericCheckPositiveWeights() {
 		Matrix[] weights = {
 			new Matrix(new double[][]{{1.0, 1.0}})
 		};
@@ -164,6 +163,83 @@ public class BackpropagationTest {
 		// gradient guess: both weights positive (same)
 		gradientNumericCheck(weights, data); 
 	}
+    	
+	/**
+	 * Compare backpropagation result to gradient computed numerically.
+	 */
+	@Test
+	public void testBackpropagationNumericCheckNegativeWeights() {
+		Matrix[] weights = {
+			new Matrix(new double[][]{{-1.0, -1.0}})
+		};
+		Sample[] data = {
+			new Sample(false, new double[]{1})
+		};
+		gradientNumericCheck(weights, data); 
+	}
+    
+        	
+	/**
+	 * Compare backpropagation result to gradient computed numerically.
+	 */
+	@Test
+	public void testBackpropagationNumericCheckTwoSamples() {
+		Matrix[] weights = {
+			new Matrix(new double[][]{{1.0, 1.0}})
+		};
+		Sample[] data = {
+			new Sample(false, new double[]{1}),
+            new Sample(true,  new double[]{1})
+		};
+		gradientNumericCheck(weights, data); 
+	}
+    
+    /**
+	 * Compare backpropagation result to gradient computed numerically.
+	 */
+	@Test
+	public void testBackpropagationNumericCheckLongerInput() {
+		Matrix[] weights = {
+			new Matrix(new double[][]{{0.5, 0.7, -0.1, 0.8, 0.4}})
+		};
+		Sample[] data = {
+			new Sample(false, new double[]{0.1, 0.0, -0.5, 1.2}),
+            new Sample(true,  new double[]{1.1, -0.2, -0.4, 0.0})
+		};
+		gradientNumericCheck(weights, data); 
+	}
+    
+    /**
+	 * Compare backpropagation result to gradient computed numerically.
+	 */
+	@Test
+	public void testBackpropagationNumericCheckTwoSimpleLayers() {
+		Matrix[] weights = {
+			new Matrix(new double[][]{{0.5, 0.5}}),
+            new Matrix(new double[][]{{0.4, 0.4}})
+		};
+		Sample[] data = {
+            new Sample(true,  new double[]{1.0})
+		};
+		gradientNumericCheck(weights, data); 
+	}
+        
+    /**
+	 * Compare backpropagation result to gradient computed numerically.
+	 */
+	@Test
+	public void testBackpropagationNumericCheckTwoLayers() {
+		Matrix[] weights = {
+			new Matrix(new double[][]{{0.5, 0.4, 0.3}, {-0.1, 0.2, 0.6}}),
+            new Matrix(new double[][]{{0.7, -0.8, 1.2}})
+		};
+		Sample[] data = {
+            new Sample(true,  new double[]{1.0, 0.8})
+		};
+		gradientNumericCheck(weights, data); 
+	}
+    
+    
 
 	/**
 	 * Compare backpropagation result to gradient computed numerically.

@@ -33,7 +33,7 @@ public class NeuralNetworkLearning {
 			double expectedOutput = ActivationUtils.labelValue(sample);
 			errorWrtValues[layersCount] = Matrix.columnVector(new double[] {output - expectedOutput});
 			// go from back to front, but omit the input layer
-			for (int l = layersCount - 1; l > 0; l++) {
+			for (int l = layersCount - 1; l > 0; l--) {
 				// for each neuron from the next layer, mulitply derivative wrt.
 				// to value with the derivative of activation function to obtain
 				// partial derivatives of error wrt. to inner potentials
