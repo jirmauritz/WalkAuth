@@ -151,16 +151,20 @@ public class NeuralNetwork {
                     + " but expected " + (weights[0].getColCount() - 1) + "x1.");
         }
 
+        Matrix values = inputs;
 		neuronValues[0] = addBias(inputs);
         for (int l = 1; l <= weights.length; l++) {
             // sum all inputs and apply activation function
 			Matrix potentials = weights[l - 1].multiply(neuronValues[l - 1]);
-			Matrix values =  potentialsToOutputs(potentials);
-			// only add bias if it's not an output layer
-            neuronValues[l] = (l == weights.length) ? values : addBias(values);
+			values =  potentialsToOutputs(potentials);
+            
+            // add bias to all layers -- including the last one (for consistency)
+            neuronValues[l] = addBias(values);
+			//// only add bias if it's not an output layer
+            //neuronValues[l] = (l == weights.length) ? values : addBias(values);
         }
 
-        return neuronValues[neuronValues.length - 1];
+        return values; //neuronValues[neuronValues.length - 1];
     }
 
     /**

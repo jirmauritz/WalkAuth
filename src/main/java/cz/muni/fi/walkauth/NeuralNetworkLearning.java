@@ -31,32 +31,36 @@ public class NeuralNetworkLearning {
 			Matrix[] errorWrtValues = new Matrix[layersCount + 1];
 			double output = neuralNetwork.computeOutput(Matrix.columnVector(sample.getEntries()));
 			double expectedOutput = ActivationUtils.labelValue(sample);
-			errorWrtValues[layersCount] = Matrix.columnVector(new double[] {output - expectedOutput});
+            // bias doesn't contain any error (-> 0.0)
+			errorWrtValues[layersCount] = Matrix.columnVector(new double[] {0.0, output - expectedOutput});
 			// go from back to front, but omit the input layer
 			for (int l = layersCount - 1; l > 0; l--) {
-				// for each neuron from the next layer, mulitply derivative wrt.
+				// for each neuron from the next layer, multiply derivative wrt.
 				// to value with the derivative of activation function to obtain
 				// partial derivatives of error wrt. to inner potentials
 				Matrix nextNeuronValues = neuralNetwork.getNeuronValuesInLayer(l + 1);
-				Matrix errorWrtPotentials = new Matrix(nextNeuronValues.getRowCount(), 1);
-				for (int r = 0; r < nextNeuronValues.getRowCount(); r++) {
+				Matrix errorWrtPotentials = Matrix.zeros(nextNeuronValues.getRowCount(), 1);
+				for (int r = 1; r < nextNeuronValues.getRowCount(); r++) {
 					double errorPartial = errorWrtValues[l + 1].get(r, 0)
 						* ActivationUtils.activationFunctionDerivative(nextNeuronValues.get(r, 0));
 					errorWrtPotentials.set(r, 0, errorPartial);
-				}				
+				}
 				
 				// compute partial derivatives of error wrt. to values of
 				// neurons in current layer
 				Matrix neuronValues = neuralNetwork.getNeuronValuesInLayer(l);
 				errorWrtValues[l] = Matrix.zeros(neuronValues.getRowCount(), 1);
-				for (int j = 0; j < neuronValues.getRowCount(); j++) {
-					double errorPartial = 0;
-					for (int r = 0; r < errorWrtPotentials.getRowCount(); r++) {
+				for (int j = 1; j < errorWrtValues[l].getRowCount(); j++) {
+					double errorPartial = 0.0;
+                    // NOTE: istead of r starting from 1 and then subtracting 1, 
+                    // it would be better to work with vector without bias (?)
+					for (int r = 1; r < errorWrtPotentials.getRowCount(); r++) {
 						errorPartial += errorWrtPotentials.get(r, 0)
-							* weights[l].get(r, j);
+							* weights[l].get(r - 1, j);
 					}					
 					errorWrtValues[l].set(j, 0, errorPartial);					
 				}
+
 			}
 			
 			// and now compute partial derivatives of error wrt. weights
@@ -64,8 +68,8 @@ public class NeuralNetworkLearning {
 				Matrix oneSampleGradient = new Matrix(weights[l].getRowCount(), weights[l].getColCount());
 				for (int j = 0; j < weights[l].getRowCount(); j++) {
 					for (int i = 0; i < weights[l].getColCount(); i++) {						
-						double errorPartial = errorWrtValues[l + 1].get(j, 0)
-							* ActivationUtils.activationFunctionDerivative(neuralNetwork.getNeuronValue(l + 1, j))
+						double errorPartial = errorWrtValues[l + 1].get(j + 1, 0)
+							* ActivationUtils.activationFunctionDerivative(neuralNetwork.getNeuronValue(l + 1, j + 1))
 							* neuralNetwork.getNeuronValue(l, i);
 						oneSampleGradient.set(j, i, errorPartial);
 					}
