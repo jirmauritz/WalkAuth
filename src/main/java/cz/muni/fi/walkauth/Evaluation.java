@@ -21,9 +21,8 @@ public class Evaluation {
 		double[] predictedValues = new double[n];
 		double[] actualValues = new double[n];
 		for (int i=0; i<n; i++) {
-			predictedValues[i] = neuralNetwork.computeOutput(Matrix.rowVector(samples[i].getEntries()));
-			actualValues[i] = samples[i].isPositiveUserData() ?	1.0 : -1.0;
-			//ActivationUtils.AMPLITUDE : -ActivationUtils.AMPLITUDE;			
+			predictedValues[i] = neuralNetwork.computeOutput(Matrix.columnVector(samples[i].getEntries()));
+			actualValues[i] = ActivationUtils.labelValue(samples[i]);	
 		}
 
 		double error = MathUtils.squareError(predictedValues, actualValues);

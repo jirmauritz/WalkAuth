@@ -43,7 +43,7 @@ public class BackpropagationTest {
 	 */
 	private static Matrix[] computeGradientNumerically(NeuralNetwork neuralNetwork, Sample[] data) {
 		final double DELTA = 0.0001;
-		Matrix[] weights = neuralNetwork.getLayers();
+		Matrix[] weights = neuralNetwork.getWeights();
 		int layersCount = weights.length;
 
 		// create gradient matricies list of correct size
@@ -59,13 +59,13 @@ public class BackpropagationTest {
 					double w = weights[l].get(i, j);
 
 					double wLeft = w - DELTA;
-					Matrix[] weightsLeft = neuralNetwork.getLayers();
+					Matrix[] weightsLeft = neuralNetwork.getWeights();
 					weightsLeft[l].set(i, j, wLeft);
 					NeuralNetwork neuralNetworkLeft = new NeuralNetwork(weightsLeft);
 					double errorLeft = Evaluation.computeError(neuralNetworkLeft, data);
 
 					double wRight = w + DELTA;
-					Matrix[] weightsRight = neuralNetwork.getLayers();
+					Matrix[] weightsRight = neuralNetwork.getWeights();
 					weightsRight[l].set(i, j, wRight);
 					NeuralNetwork neuralNetworkRight = new NeuralNetwork(weightsRight);
 					double errorRight = Evaluation.computeError(neuralNetworkRight, data);
@@ -171,7 +171,7 @@ public class BackpropagationTest {
 	 * @param weights configuration of a neural network
 	 * @param data data on which to calculate the error
 	 */
-	public void gradientNumericCheck(Matrix[] weights, Sample[] data) {
+	private void gradientNumericCheck(Matrix[] weights, Sample[] data) {
 		// given
 		NeuralNetwork neuralNetwork = new NeuralNetwork(weights);
 

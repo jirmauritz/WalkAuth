@@ -1,12 +1,12 @@
 package cz.muni.fi.walkauth;
 
-import static java.lang.Math.abs;
 import static org.testng.Assert.*;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
+import static java.lang.Math.abs;
 
 /**
  *
@@ -107,7 +107,7 @@ public class NeuralNetworkNGTest {
     @Test
     public void testGetLayers() {
         NeuralNetwork instance = new NeuralNetwork(layers);
-        Matrix[] result = instance.getLayers();
+        Matrix[] result = instance.getWeights();
 
         assertEquals(result, layers, "Layer do not equal.");
     }
@@ -133,8 +133,8 @@ public class NeuralNetworkNGTest {
     public void testComputeOutputs() {
         NeuralNetwork instance = new NeuralNetwork(layers);
         Matrix result = instance.computeOutputs(testInput1);
-        assertTrue(result.getColCount() == 1, "Output is not a vector.");
-        assertTrue(result.getRowCount() == 2, "Output vector has incorrect size.");
+        assertEquals(result.getColCount(), 1, "Output is not a column vector.");
+        assertEquals(result.getRowCount(), 2, "Output vector has incorrect size.");
 
         for (int i = 0; i < result.getRowCount(); i++) {
             assertTrue(abs(result.get(i, 0) - expectedOutput1.get(i, 0)) < epsilon, "Forward computation did not ended with expected result.");

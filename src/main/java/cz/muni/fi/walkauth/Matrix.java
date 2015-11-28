@@ -62,6 +62,16 @@ public final class Matrix {
 		double[][] values2d = {values};
         return new Matrix(values2d);
     }
+	
+	/**
+     * Static factory for a column vector.
+     *
+     * @param values items of the vector
+     * @return n-1 matrix representing a column vector with given values
+     */
+    public static Matrix columnVector(double[] values) {
+        return Matrix.rowVector(values).transpose();
+    }
 
     /**
      * Static factory for an identity matrix.
@@ -276,7 +286,13 @@ public final class Matrix {
      * @return transposition of the matrix
      */
     public Matrix transpose() {
-        throw new UnsupportedOperationException("Not implemented yet.");
+        double[][] transposedValues = new double[m][n]; 
+		for(int i = 0; i < m; i++) {
+            for(int j = 0; j < n; j++) {
+                transposedValues[i][j] = values[j][i];
+            }
+        }
+		return new Matrix(transposedValues);		
     }
 
     /**

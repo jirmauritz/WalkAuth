@@ -10,10 +10,11 @@ import java.util.Arrays;
  */
 public class NeuralNetwork {
 
-    /**
-     * list of matricies that hold weights of every link between two neurons
-     */
-    private Matrix[] layers;
+    // weights between neurons (1 matrix of weights between adjancent layers
+    private Matrix[] weights;
+	
+	// values of neurons after the last computation (column vector for each layer)
+	private Matrix[] neuronValues;
 
     // some useful instances
     public static final NeuralNetwork IDENTITY = new NeuralNetwork(
@@ -50,42 +51,59 @@ public class NeuralNetwork {
      * @param layerSizes size of each layer, including the input one
      */
     public NeuralNetwork(int... layerSizes) {
-        this.layers = new Matrix[layerSizes.length - 1];
-        for (int i = 0; i < this.layers.length; i++) {
-			this.layers[i] = new Matrix(layerSizes[i + 1], layerSizes[i] + 1);
+		this.neuronValues = new Matrix[layerSizes.length];
+        this.weights = new Matrix[layerSizes.length - 1];
+        for (int i = 0; i < this.weights.length; i++) {
+			this.weights[i] = new Matrix(layerSizes[i + 1], layerSizes[i] + 1);
         }
     }
 
-    public NeuralNetwork(Matrix[] layers) {
-        if (layers == null) {
+    public NeuralNetwork(Matrix[] weights) {
+        if (weights == null) {
             throw new IllegalArgumentException("List of layer cannot be null.");
         }
-        if (layers.length < 1) {
+        if (weights.length < 1) {
             throw new IllegalArgumentException("There must be atleas one layer of neurons.");
         }
+        for (int i = 1; i < weights.length; i++) {
+            // -1 for bias
+            if (weights[i].getColCount() - 1 != weights[i - 1].getRowCount()) {
+                throw new IllegalArgumentException("Not valid layers, matrix dimensions do not corresponds.");
+            }
+        }
+		
+        this.weights = Arrays.copyOf(weights, weights.length);
+		this.neuronValues = new Matrix[weights.length + 1];
+    }
+
+    public Matrix[] getWeights() {
+        return Arrays.copyOf(this.weights, this.weights.length);
+    }
+
+    public void setWeights(Matrix[] layers) {
         for (int i = 1; i < layers.length; i++) {
             // -1 for bias
             if (layers[i].getColCount() - 1 != layers[i - 1].getRowCount()) {
                 throw new IllegalArgumentException("Not valid layers, matrix dimensions do not corresponds.");
             }
         }
-        this.layers = Arrays.copyOf(layers, layers.length);
-    }
 
-    public Matrix[] getLayers() {
-        return Arrays.copyOf(this.layers, this.layers.length);
+        this.weights = Arrays.copyOf(layers, layers.length);
     }
-
-    public void setLayers(Matrix[] layers) {
-        for (int i = 1; i < layers.length; i++) {
-            // -1 for bias
-            if (layers[i].getColCount() - 1 != layers[i - 1].getRowCount()) {
-                throw new IllegalArgumentException("Not valid layers, matrix dimensions do not corresponds.");
-            }
-        }
-
-        this.layers = Arrays.copyOf(layers, layers.length);
+	
+	/**
+     * Get one layer of neuron values
+     *
+     * @param layer layer order number (input layer is 0)
+     * @return column vector of values of neurons in this layer
+     */
+    public Matrix getNeuronValuesInLayer(int layer) {
+		return neuronValues[layer];
     }
+	
+	public double getNeuronValue(int layer, int row) {
+		return neuronValues[layer].get(row, 0);
+	}
 
     /**
      * Gets the weight of given neuron.
@@ -99,7 +117,7 @@ public class NeuralNetwork {
         if (layer == 0) {
             throw new IllegalArgumentException("Input neurons do not have weights.");
         } else {
-            return layers[layer - 1].get(neuronNumber, weightNumber);
+            return weights[layer - 1].get(neuronNumber, weightNumber);
         }
     }
 
@@ -117,41 +135,42 @@ public class NeuralNetwork {
      * layers.get(layer - 1).set(neuronNumber, weightNumber, weight); } }
      */
     /**
-     * Computes ouput values for the given input values.
+     * Computes output values for the given input values.
      *
      * @param inputs input values
-     * @return output values of ouput neurons
+     * @return output values of output neurons
      */
     public Matrix computeOutputs(Matrix inputs) {
         if (inputs == null) {
             throw new IllegalArgumentException("Input cannot be null.");
         }
         // -1 for bias
-        if (inputs.getColCount() != 1 || inputs.getRowCount() != layers[0].getColCount() - 1) {
+        if (inputs.getColCount() != 1 || inputs.getRowCount() != weights[0].getColCount() - 1) {
             throw new IllegalArgumentException("Input matrix does not have required dimensions. "
                     + "Got " + inputs.getRowCount() + "x" + inputs.getColCount()
-                    + " but expected " + (layers[0].getColCount() - 1) + "x1.");
+                    + " but expected " + (weights[0].getColCount() - 1) + "x1.");
         }
 
-        Matrix outputs = inputs;
-
-        for (Matrix layer : layers) {
+		neuronValues[0] = addBias(inputs);
+        for (int l = 1; l <= weights.length; l++) {
             // sum all inputs and apply activation function
-            outputs = potentialsToOutputs(layer.multiply(addBias(outputs)));
-
+			Matrix potentials = weights[l - 1].multiply(neuronValues[l - 1]);
+			Matrix values =  potentialsToOutputs(potentials);
+			// only add bias if it's not an output layer
+            neuronValues[l] = (l == weights.length) ? values : addBias(values);
         }
 
-        return outputs;
+        return neuronValues[neuronValues.length - 1];
     }
 
     /**
-     * Coumputes output value in case there is only one output neuron.
+     * Computes output value in case there is only one output neuron.
      *
      * @param inputs vector of input values
      * @return output of the only output neuron
      */
     public double computeOutput(Matrix inputs) {
-        if (layers[layers.length - 1].getRowCount() != 1) {
+        if (weights[weights.length - 1].getRowCount() != 1) {
             throw new UnsupportedOperationException("This neural network has more the one output neuron.");
         }
         Matrix result = computeOutputs(inputs);
@@ -164,7 +183,7 @@ public class NeuralNetwork {
      * @param input input to be modified
      * @return input with bais as the first element of the vector
      */
-    private Matrix addBias(Matrix input) {
+    private static Matrix addBias(Matrix input) {
         double[][] newInput = new double[input.getRowCount() + 1][1];
         newInput[0][0] = 1;
 
@@ -176,12 +195,12 @@ public class NeuralNetwork {
     }
 
     /**
-     * Applies activation funcion to potential of every neuron.
+     * Applies activation function to potential of every neuron.
      *
      * @param potentials potentials of neurons
      * @return matrix with neurons' outputs
      */
-    private Matrix potentialsToOutputs(Matrix potentials) {
+    private static Matrix potentialsToOutputs(Matrix potentials) {
         if (potentials == null) {
             throw new IllegalArgumentException("Potetial matrix cannot be null.");
         }
@@ -198,14 +217,14 @@ public class NeuralNetwork {
     public String toString() {
         StringBuilder sb = new StringBuilder("NeuralNetwork with topology topology ");
 
-        sb.append(layers[0].getColCount());
+        sb.append(weights[0].getColCount());
 
-        for (Matrix layer : layers) {
+        for (Matrix layer : weights) {
             sb.append("-");
             sb.append(layer.getRowCount());
         }
 
-        for (Matrix layer : layers) {
+        for (Matrix layer : weights) {
             sb.append("\n");
             sb.append(layer.toString());
         }
