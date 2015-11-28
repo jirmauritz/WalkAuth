@@ -1,9 +1,6 @@
 package cz.muni.fi.walkauth;
 
 import cz.muni.fi.walkauth.preprocessing.Sample;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 import static org.testng.Assert.*;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
