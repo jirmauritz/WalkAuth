@@ -145,5 +145,31 @@ public class NeuralNetworkLearning {
 
         return error;
     }
+	
+	public static NeuralNetwork initializeWeights(NeuralNetwork network) {
+		int[] neurons = network.getLayers();
+		Matrix[] newWeights = new Matrix[neurons.length - 1]; // weight are between neurons -> -1
+		for (int i = 0; i < neurons.length - 1; i++) {
+			int numOfLowNeurons = neurons[i];
+			int numOfHighNeurons = neurons[i + 1];
+			double newWeight = computeInitWeight(numOfLowNeurons);
+			double[][] vector = new double[numOfHighNeurons][numOfLowNeurons + 1];
+			for (int row = 0; row < numOfHighNeurons; row++) {
+				for (int col = 0; col < numOfLowNeurons; col++) {
+					vector[row][col] = newWeight;
+				}
+				// bias
+				vector[row][numOfLowNeurons] = 1;
+			}
+
+			newWeights[i] = new Matrix(vector);
+		}
+		return new NeuralNetwork(newWeights);
+	}
+
+	private static double computeInitWeight(double d) {
+		// d is number of neurons on the lower layer
+		return Math.sqrt(3 / d);
+	}
 
 }

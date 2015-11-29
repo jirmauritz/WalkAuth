@@ -7,6 +7,7 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 import static java.lang.Math.abs;
+import org.junit.Assert;
 
 /**
  *
@@ -105,7 +106,7 @@ public class NeuralNetworkNGTest {
      * Test of getLayers method, of class NeuralNetwork.
      */
     @Test
-    public void testGetLayers() {
+    public void testGetWeights() {
         NeuralNetwork instance = new NeuralNetwork(layers);
         Matrix[] result = instance.getWeights();
 
@@ -125,6 +126,14 @@ public class NeuralNetworkNGTest {
         double result = instance.getNeuronWeight(layer, neuronNumber, weightNumber);
         assertEquals(result, expResult, "Did not recieved expected weight.");
     }
+	
+	@Test
+	public void testGetLayers() {
+		int[] testLayers = new int[] {100,50,30,20,5,1};
+		NeuralNetwork network = new NeuralNetwork(testLayers);
+		Assert.assertArrayEquals(testLayers, network.getLayers());
+		
+	}
 
     /**
      * Test of computeOutputs method, of class NeuralNetwork.

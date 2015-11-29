@@ -91,6 +91,15 @@ public class NeuralNetwork {
         this.weights = Arrays.copyOf(layers, layers.length);
     }
 	
+	public int[] getLayers() {
+		int[] layers = new int[weights.length + 1];
+		for (int i = 0; i < weights.length; i++) {
+			layers[i] = weights[i].getColCount() - 1;
+		}
+		layers[weights.length] = weights[weights.length - 1].getRowCount();
+		return layers;
+	}
+	
 	/**
      * Get one layer of neuron values
      *
