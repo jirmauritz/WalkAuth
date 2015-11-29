@@ -1,7 +1,9 @@
 package cz.muni.fi.walkauth;
 
 import cz.muni.fi.walkauth.preprocessing.Sample;
+import java.util.Random;
 import java.util.function.Function;
+import java.util.stream.DoubleStream;
 
 /**
  *
@@ -146,30 +148,56 @@ public class NeuralNetworkLearning {
         return error;
     }
 	
+	/**
+	 * Method initialize weights of given network.
+	 * 
+	 * The initialization is computed as stated in slides of PV021, i.e.
+	 * weights are initialized randomly in interval [-w,w] where w = sqrt(3/d)
+	 * where d is number of weights pointing in the same neuron as computed weight.
+	 * 
+	 * @param network to be assigned initialized weights
+	 * @return new instance of NeuralNetwork
+	 */
 	public static NeuralNetwork initializeWeights(NeuralNetwork network) {
 		int[] neurons = network.getLayers();
 		Matrix[] newWeights = new Matrix[neurons.length - 1]; // weight are between neurons -> -1
 		for (int i = 0; i < neurons.length - 1; i++) {
 			int numOfLowNeurons = neurons[i];
 			int numOfHighNeurons = neurons[i + 1];
-			double newWeight = computeInitWeight(numOfLowNeurons);
-			double[][] vector = new double[numOfHighNeurons][numOfLowNeurons + 1];
+			double[][] weightsInLayer = new double[numOfHighNeurons][numOfLowNeurons + 1];
 			for (int row = 0; row < numOfHighNeurons; row++) {
-				for (int col = 0; col < numOfLowNeurons; col++) {
-					vector[row][col] = newWeight;
+				// values
+				for (int col = 0; col < numOfLowNeurons + 1; col++) {
+					weightsInLayer[row][col] = computeInitWeight(numOfLowNeurons);
 				}
-				// bias
-				vector[row][numOfLowNeurons] = 1;
 			}
 
-			newWeights[i] = new Matrix(vector);
+			newWeights[i] = new Matrix(weightsInLayer);
 		}
 		return new NeuralNetwork(newWeights);
 	}
 
+
+	/**
+	 * Computes random double in the interval [-w,w] where w = sqrt(3/d) where
+	 * d is number of weights pointing in the same neuron as computed weight.
+	 *
+	 * @param d is number of neurons on the lower layer
+	*/
 	private static double computeInitWeight(double d) {
-		// d is number of neurons on the lower layer
-		return Math.sqrt(3 / d);
+		// compute range value w
+		double rangeValue = Math.sqrt(3 / d);
+		
+		// compute random value r in [0,1]
+		Random rand = new Random(System.nanoTime());
+		DoubleStream ds = rand.doubles();
+		double randomDouble =  ds.findAny().getAsDouble();
+		
+		// make it range [-1,1]
+		randomDouble = (randomDouble - 0.5) * 2;
+		
+		// expand value to interal [-w,w]
+		return randomDouble * rangeValue;
 	}
 
 }
