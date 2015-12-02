@@ -1,6 +1,7 @@
 package cz.muni.fi.walkauth;
 
 import cz.muni.fi.walkauth.preprocessing.Sample;
+import java.util.Arrays;
 import java.util.Random;
 import java.util.function.Function;
 import java.util.stream.DoubleStream;
@@ -101,7 +102,7 @@ public class NeuralNetworkLearning {
         int numberOfLayers = neuralNetwork.getWeights().length;
         // copy the given neural network
         NeuralNetwork trainedNeuralNetwork = new NeuralNetwork(neuralNetwork.getWeights());
-        error = computeError(trainedNeuralNetwork, validationData);
+        error = Evaluation.computeError(trainedNeuralNetwork, validationData);
 
         System.out.println("Begining gradient descent. Prior error is: " + error);
 
@@ -116,9 +117,11 @@ public class NeuralNetworkLearning {
                 // subtract gradient times speed to the original weights
                 newLayers[i] = trainedNeuralNetwork.getWeights()[i].add(errorDerivationByWeight.multiplyByScalar(-1 * speed));
             }
-
+            
+            System.out.println("learned anything? " + !Arrays.equals(newLayers, trainedNeuralNetwork.getWeights()));
+            
             trainedNeuralNetwork.setWeights(newLayers);
-            error = computeError(trainedNeuralNetwork, validationData);
+            error = Evaluation.computeError(trainedNeuralNetwork, validationData);
 
             System.out.println("step: " + step + ", error: " + error);
         }
@@ -129,28 +132,6 @@ public class NeuralNetworkLearning {
             System.out.println("Gradient descent finnished due to exceeding " + maxIterations + " iterations.");
         }
         return trainedNeuralNetwork;
-    }
-
-    /**
-     * Function that computes combined error over given test samples.
-     *
-     * @param neuralNetwork network which error will be computed
-     * @param data array of sample data
-     * @return computed error for given neural network and given data
-     */
-    public static double computeError(NeuralNetwork neuralNetwork, Sample[] data) {
-        double[] predicted = new double[data.length];
-        double[] actual = new double[data.length];
-        double error = 0;
-
-        for (int i = 0; i < data.length; i++) {
-            predicted[i] = ActivationUtils.labelValue(data[i]);
-            actual[i] = neuralNetwork.computeOutput(Matrix.columnVector(data[i].getEntries()));
-        }
-
-        error += MathUtils.squareError(predicted, actual);
-
-        return error;
     }
 
     /**
@@ -220,7 +201,9 @@ public class NeuralNetworkLearning {
      */
     public static NeuralNetwork trainNeuralNetwork(int[] networkTopology, Sample[] trainingData, Sample[] validationData, double acceptableError, Function<Integer, Double> learningSpeed, int maxIterations) {
         NeuralNetwork empty = new NeuralNetwork(networkTopology);
+        //System.out.println("New neural network has been created." + empty);
         NeuralNetwork randomlyInitializedNetwork = initializeWeights(empty);
+        //System.out.println("Weights has been randomly inicialized." + randomlyInitializedNetwork);
         return gradienDescent(randomlyInitializedNetwork, trainingData, validationData, acceptableError, learningSpeed, maxIterations);
     }
 

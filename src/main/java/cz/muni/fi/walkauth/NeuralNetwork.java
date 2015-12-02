@@ -50,6 +50,9 @@ public class NeuralNetwork {
      * @param layerSizes size of each layer, including the input one
      */
     public NeuralNetwork(int... layerSizes) {
+        if (layerSizes.length <= 1) {
+            throw new IllegalArgumentException("There can not be only one layer in the neural network. Please insert at least two layers.");
+        }
         this.neuronValues = new Matrix[layerSizes.length];
         this.weights = new Matrix[layerSizes.length - 1];
         for (int i = 0; i < this.weights.length; i++) {

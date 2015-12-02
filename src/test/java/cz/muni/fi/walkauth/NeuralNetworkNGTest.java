@@ -7,6 +7,7 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 import static java.lang.Math.abs;
+import java.util.Arrays;
 import org.junit.Assert;
 
 /**
@@ -126,18 +127,25 @@ public class NeuralNetworkNGTest {
         double result = instance.getNeuronWeight(layer, neuronNumber, weightNumber);
         assertEquals(result, expResult, "Did not recieved expected weight.");
     }
-	
-	@Test
-	public void testGetLayers() {
-		int[] testLayers = new int[] {100,50,30,20,5,1};
-		NeuralNetwork network = new NeuralNetwork(testLayers);
-		Assert.assertArrayEquals(testLayers, network.getLayers());
-		
-		testLayers = new int[] {30};
-		network = new NeuralNetwork(testLayers);
-		Assert.assertArrayEquals(testLayers, network.getLayers());
-		
-	}
+
+    @Test
+    public void testGetLayers() {
+        int[] testLayers = new int[]{100, 50, 30, 20, 5, 1};
+        NeuralNetwork network = new NeuralNetwork(testLayers);
+        Assert.assertArrayEquals(testLayers, network.getLayers());
+
+        testLayers = new int[]{30, 5};
+        network = new NeuralNetwork(testLayers);
+        Assert.assertArrayEquals(testLayers, network.getLayers());
+
+    }
+
+    @Test(expectedExceptions = IllegalArgumentException.class)
+    public void testInvalidNumberOfLayers() {
+        int[] testLayers = new int[]{30};
+        NeuralNetwork network = new NeuralNetwork(testLayers);
+        fail("Neural netowrk with only input layer has been created.");
+    }
 
     /**
      * Test of computeOutputs method, of class NeuralNetwork.
