@@ -71,7 +71,7 @@ public class Main {
 		int[] array = new int[stringArray.length];
 		try {
 		for (int i = 0; i < stringArray.length; i ++) {
-			array[i] = Integer.parseInt(stringArray[i]);
+			array[i] = Integer.parseInt(stringArray[i].trim());
 		}
 		} catch (NumberFormatException ex) {
 			throw new IllegalArgumentException("Wrong syntax in config file in the hiddenNeuronsTopology field.", ex);

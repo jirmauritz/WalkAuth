@@ -98,12 +98,12 @@ public class DataManager {
 		sb.append(" samples\n");
 		sb.append("verify data size: ");
 		sb.append(validationData.size());
-		sb.append(" samples\n\n");
+		sb.append(" samples\n");
 		sb.append("Original mean value: ");
 		sb.append(normalization.getMean());
 		sb.append(", original standart deviation: ");
 		sb.append(normalization.getDeviation());
-		sb.append("\n\n");				
+		sb.append("\n");				
 		sb.append("Data density (| positive user, - negative user)\n");
 		sb.append("training data density: [");
 		for (Sample s : trainingData) {
@@ -132,14 +132,14 @@ public class DataManager {
 				sb.append("-");
 			}
 		}
-		sb.append("]\n\n");
+		sb.append("]\n");
 		sb.append("Example of first positive testing sample: [");
 		for (int i=0; i<5; i++) {
 			sb.append(testingData.get(0).getEntries()[i]);
 			sb.append(", ");
 		}
 		sb.append(testingData.get(0).getEntries()[5]);
-		sb.append(", ...");
+		sb.append(", ...\n");
 
 		return sb.toString();
 	}
