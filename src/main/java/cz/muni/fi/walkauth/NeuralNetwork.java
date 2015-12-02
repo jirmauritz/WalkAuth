@@ -91,6 +91,10 @@ public class NeuralNetwork {
     }
 
     public int[] getLayers() {
+		if (weights.length == 0) {
+			// TODO, after constructor fix, update to retrieve right number
+			return new int[] {};
+		}
         int[] layers = new int[weights.length + 1];
         for (int i = 0; i < weights.length; i++) {
             layers[i] = weights[i].getColCount() - 1;

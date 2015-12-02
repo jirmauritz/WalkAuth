@@ -133,6 +133,10 @@ public class NeuralNetworkNGTest {
 		NeuralNetwork network = new NeuralNetwork(testLayers);
 		Assert.assertArrayEquals(testLayers, network.getLayers());
 		
+		testLayers = new int[] {30};
+		network = new NeuralNetwork(testLayers);
+		Assert.assertArrayEquals(testLayers, network.getLayers());
+		
 	}
 
     /**
