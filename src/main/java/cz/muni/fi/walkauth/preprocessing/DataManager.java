@@ -76,12 +76,8 @@ public class DataManager {
 		// create verify data
 		generateData(validationData, positiveUserData, negativeUserData, positiveUserData.size(), negativeUserData.size());
 		
-		// normalization		
-		List<Sample> allInOne = new ArrayList<>(trainingData);
-		allInOne.addAll(testingData);
-		allInOne.addAll(validationData);
 		// compute mean and deviation from all
-		normalization.computeMeanAndDeviation(allInOne);
+		normalization.computeMeanAndDeviation(trainingData);
 		// normalize each
 		trainingData = normalization.normalize(trainingData);
 		testingData = normalization.normalize(testingData);
