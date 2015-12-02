@@ -11,7 +11,9 @@ import java.util.stream.DoubleStream;
  */
 public class NeuralNetworkLearning {
 
-/**
+    public static final int MAX_ITERATIONS = 100;
+
+    /**
      * Backpropagation algorithm for computing gradient of error function.
      *
      * @param neuralNetwork configuration of neural network
@@ -44,7 +46,7 @@ public class NeuralNetworkLearning {
                 Matrix errorWrtPotentials = Matrix.zeros(nextNeuronValues.getRowCount(), 1);
                 for (int r = 1; r < nextNeuronValues.getRowCount(); r++) {
                     double errorPartial = errorWrtValues[l + 1].get(r, 0)
-                        * ActivationUtils.activationFunctionDerivative(nextNeuronValues.get(r, 0));
+                            * ActivationUtils.activationFunctionDerivative(nextNeuronValues.get(r, 0));
                     errorWrtPotentials.set(r, 0, errorPartial);
                 }
 
@@ -58,7 +60,7 @@ public class NeuralNetworkLearning {
                     // it would be better to work with vector without bias (?)
                     for (int r = 1; r < errorWrtPotentials.getRowCount(); r++) {
                         errorPartial += errorWrtPotentials.get(r, 0)
-                            * weights[l].get(r - 1, j);
+                                * weights[l].get(r - 1, j);
                     }
                     errorWrtValues[l].set(j, 0, errorPartial);
                 }
@@ -71,8 +73,8 @@ public class NeuralNetworkLearning {
                 for (int j = 0; j < weights[l].getRowCount(); j++) {
                     for (int i = 0; i < weights[l].getColCount(); i++) {
                         double errorPartial = errorWrtValues[l + 1].get(j + 1, 0)
-                            * ActivationUtils.activationFunctionDerivative(neuralNetwork.getNeuronValue(l + 1, j + 1))
-                            * neuralNetwork.getNeuronValue(l, i);
+                                * ActivationUtils.activationFunctionDerivative(neuralNetwork.getNeuronValue(l + 1, j + 1))
+                                * neuralNetwork.getNeuronValue(l, i);
                         oneSampleGradient.set(j, i, errorPartial);
                     }
                 }
@@ -96,18 +98,17 @@ public class NeuralNetworkLearning {
      * @return trained neural network
      */
     public static NeuralNetwork gradienDescent(NeuralNetwork neuralNetwork, Sample[] trainingData, Sample[] validationData, double acceptableError, Function<Integer, Double> learningSpeed) {
-        double error = 0;
+        double error;
         int step = 0;
         int numberOfLayers = neuralNetwork.getWeights().length;
-
         // copy the given neural network
         NeuralNetwork trainedNeuralNetwork = new NeuralNetwork(neuralNetwork.getWeights());
-
         error = computeError(trainedNeuralNetwork, validationData);
 
-        while (error > acceptableError) {
-            step++;
+        System.out.println("Begining gradient descent. Prior error is: " + error);
 
+        while (error > acceptableError && step < MAX_ITERATIONS) {
+            step++;
             Matrix[] newLayers = new Matrix[numberOfLayers];
             Matrix[] errorDerivationsByWeight = backpropagation(trainedNeuralNetwork, trainingData);
 
@@ -119,10 +120,16 @@ public class NeuralNetworkLearning {
             }
 
             trainedNeuralNetwork.setWeights(newLayers);
-
             error = computeError(trainedNeuralNetwork, validationData);
+
+            System.out.println("step: " + step + ", error: " + error);
         }
 
+        if (error <= acceptableError) {
+            System.out.println("Gradient descent finnished with error being lower than acceptable error.");
+        } else {
+            System.out.println("Gradient descent finnished due to exceeding " + MAX_ITERATIONS + " iterations.");
+        }
         return trainedNeuralNetwork;
     }
 
@@ -147,57 +154,75 @@ public class NeuralNetworkLearning {
 
         return error;
     }
-	
-	/**
-	 * Method initialize weights of given network.
-	 * 
-	 * The initialization is computed as stated in slides of PV021, i.e.
-	 * weights are initialized randomly in interval [-w,w] where w = sqrt(3/d)
-	 * where d is number of weights pointing in the same neuron as computed weight.
-	 * 
-	 * @param network to be assigned initialized weights
-	 * @return new instance of NeuralNetwork
-	 */
-	public static NeuralNetwork initializeWeights(NeuralNetwork network) {
-		int[] neurons = network.getLayers();
-		Matrix[] newWeights = new Matrix[neurons.length - 1]; // weight are between neurons -> -1
-		for (int i = 0; i < neurons.length - 1; i++) {
-			int numOfLowNeurons = neurons[i];
-			int numOfHighNeurons = neurons[i + 1];
-			double[][] weightsInLayer = new double[numOfHighNeurons][numOfLowNeurons + 1];
-			for (int row = 0; row < numOfHighNeurons; row++) {
-				// values
-				for (int col = 0; col < numOfLowNeurons + 1; col++) {
-					weightsInLayer[row][col] = computeInitWeight(numOfLowNeurons);
-				}
-			}
 
-			newWeights[i] = new Matrix(weightsInLayer);
-		}
-		return new NeuralNetwork(newWeights);
-	}
+    /**
+     * Method initialize weights of given network.
+     *
+     * The initialization is computed as stated in slides of PV021, i.e. weights
+     * are initialized randomly in interval [-w,w] where w = sqrt(3/d) where d
+     * is number of weights pointing in the same neuron as computed weight.
+     *
+     * @param network to be assigned initialized weights
+     * @return new instance of NeuralNetwork
+     */
+    public static NeuralNetwork initializeWeights(NeuralNetwork network) {
+        int[] neurons = network.getLayers();
+        Matrix[] newWeights = new Matrix[neurons.length - 1]; // weight are between neurons -> -1
+        for (int i = 0; i < neurons.length - 1; i++) {
+            int numOfLowNeurons = neurons[i];
+            int numOfHighNeurons = neurons[i + 1];
+            double[][] weightsInLayer = new double[numOfHighNeurons][numOfLowNeurons + 1];
+            for (int row = 0; row < numOfHighNeurons; row++) {
+                // values
+                for (int col = 0; col < numOfLowNeurons + 1; col++) {
+                    weightsInLayer[row][col] = computeInitWeight(numOfLowNeurons);
+                }
+            }
 
+            newWeights[i] = new Matrix(weightsInLayer);
+        }
+        return new NeuralNetwork(newWeights);
+    }
 
-	/**
-	 * Computes random double in the interval [-w,w] where w = sqrt(3/d) where
-	 * d is number of weights pointing in the same neuron as computed weight.
-	 *
-	 * @param d is number of neurons on the lower layer
-	*/
-	private static double computeInitWeight(double d) {
-		// compute range value w
-		double rangeValue = Math.sqrt(3 / d);
-		
-		// compute random value r in [0,1]
-		Random rand = new Random(System.nanoTime());
-		DoubleStream ds = rand.doubles();
-		double randomDouble =  ds.findAny().getAsDouble();
-		
-		// make it range [-1,1]
-		randomDouble = (randomDouble - 0.5) * 2;
-		
-		// expand value to interal [-w,w]
-		return randomDouble * rangeValue;
-	}
+    /**
+     * Computes random double in the interval [-w,w] where w = sqrt(3/d) where d
+     * is number of weights pointing in the same neuron as computed weight.
+     *
+     * @param d is number of neurons on the lower layer
+     */
+    private static double computeInitWeight(double d) {
+        // compute range value w
+        double rangeValue = Math.sqrt(3 / d);
+
+        // compute random value r in [0,1]
+        Random rand = new Random(System.nanoTime());
+        DoubleStream ds = rand.doubles();
+        double randomDouble = ds.findAny().getAsDouble();
+
+        // make it range [-1,1]
+        randomDouble = (randomDouble - 0.5) * 2;
+
+        // expand value to interal [-w,w]
+        return randomDouble * rangeValue;
+    }
+
+    /**
+     * This method trains completly new neural network with given topology on
+     * given data.
+     *
+     * @param networkTopology array of integers that denotes the number of
+     * neurons in each layer
+     * @param trainingData array of training inputs
+     * @param validationData array of valdation inputs
+     * @param acceptableError maximal acceptable error
+     * @param learningSpeed function that for the given number of passes returns
+     * learning speed (epsilon from slides)
+     * @return Returns trained neural network
+     */
+    public static NeuralNetwork trainNeuralNetwork(int[] networkTopology, Sample[] trainingData, Sample[] validationData, double acceptableError, Function<Integer, Double> learningSpeed) {
+        NeuralNetwork empty = new NeuralNetwork(networkTopology);
+        NeuralNetwork randomlyInitializedNetwork = initializeWeights(empty);
+        return gradienDescent(randomlyInitializedNetwork, trainingData, validationData, acceptableError, learningSpeed);
+    }
 
 }

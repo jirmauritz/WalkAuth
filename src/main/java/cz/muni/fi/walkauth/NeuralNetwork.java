@@ -12,9 +12,9 @@ public class NeuralNetwork {
 
     // weights between neurons (1 matrix of weights between adjancent layers
     private Matrix[] weights;
-	
-	// values of neurons after the last computation (column vector for each layer)
-	private Matrix[] neuronValues;
+
+    // values of neurons after the last computation (column vector for each layer)
+    private Matrix[] neuronValues;
 
     // some useful instances
     public static final NeuralNetwork IDENTITY = new NeuralNetwork(
@@ -43,18 +43,17 @@ public class NeuralNetwork {
 //            previous = layers[i];
 //        }
 //    }
-	
-	 /**
-     * Creates a neural network with the given layer counts.
-     * The weights are not initialized.
+    /**
+     * Creates a neural network with the given layer counts. The weights are not
+     * initialized.
      *
      * @param layerSizes size of each layer, including the input one
      */
     public NeuralNetwork(int... layerSizes) {
-		this.neuronValues = new Matrix[layerSizes.length];
+        this.neuronValues = new Matrix[layerSizes.length];
         this.weights = new Matrix[layerSizes.length - 1];
         for (int i = 0; i < this.weights.length; i++) {
-			this.weights[i] = new Matrix(layerSizes[i + 1], layerSizes[i] + 1);
+            this.weights[i] = new Matrix(layerSizes[i + 1], layerSizes[i] + 1);
         }
     }
 
@@ -71,9 +70,9 @@ public class NeuralNetwork {
                 throw new IllegalArgumentException("Not valid layers, matrix dimensions do not corresponds.");
             }
         }
-		
+
         this.weights = Arrays.copyOf(weights, weights.length);
-		this.neuronValues = new Matrix[weights.length + 1];
+        this.neuronValues = new Matrix[weights.length + 1];
     }
 
     public Matrix[] getWeights() {
@@ -90,29 +89,29 @@ public class NeuralNetwork {
 
         this.weights = Arrays.copyOf(layers, layers.length);
     }
-	
-	public int[] getLayers() {
-		int[] layers = new int[weights.length + 1];
-		for (int i = 0; i < weights.length; i++) {
-			layers[i] = weights[i].getColCount() - 1;
-		}
-		layers[weights.length] = weights[weights.length - 1].getRowCount();
-		return layers;
-	}
-	
-	/**
+
+    public int[] getLayers() {
+        int[] layers = new int[weights.length + 1];
+        for (int i = 0; i < weights.length; i++) {
+            layers[i] = weights[i].getColCount() - 1;
+        }
+        layers[weights.length] = weights[weights.length - 1].getRowCount();
+        return layers;
+    }
+
+    /**
      * Get one layer of neuron values
      *
      * @param layer layer order number (input layer is 0)
      * @return column vector of values of neurons in this layer
      */
     public Matrix getNeuronValuesInLayer(int layer) {
-		return neuronValues[layer];
+        return neuronValues[layer];
     }
-	
-	public double getNeuronValue(int layer, int row) {
-		return neuronValues[layer].get(row, 0);
-	}
+
+    public double getNeuronValue(int layer, int row) {
+        return neuronValues[layer].get(row, 0);
+    }
 
     /**
      * Gets the weight of given neuron.
@@ -161,15 +160,15 @@ public class NeuralNetwork {
         }
 
         Matrix values = inputs;
-		neuronValues[0] = addBias(inputs);
+        neuronValues[0] = addBias(inputs);
         for (int l = 1; l <= weights.length; l++) {
             // sum all inputs and apply activation function
-			Matrix potentials = weights[l - 1].multiply(neuronValues[l - 1]);
-			values =  potentialsToOutputs(potentials);
-            
+            Matrix potentials = weights[l - 1].multiply(neuronValues[l - 1]);
+            values = potentialsToOutputs(potentials);
+
             // add bias to all layers -- including the last one (for consistency)
             neuronValues[l] = addBias(values);
-			//// only add bias if it's not an output layer
+            //// only add bias if it's not an output layer
             //neuronValues[l] = (l == weights.length) ? values : addBias(values);
         }
 

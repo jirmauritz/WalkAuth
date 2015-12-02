@@ -15,13 +15,11 @@ public class GradientDescentTest {
 
     private NeuralNetwork id;
 
-    private Sample[] samples1;
+    private Sample[] samples;
 
-    private Sample[] validationSamples1;
-    
-    private Sample[] samples2;
-    
-    private Sample[] validationSamples2;
+    private Sample[] validationSamples;
+
+    private NeuralNetwork n;
 
     @BeforeMethod
     public void beforeMethod() {
@@ -30,24 +28,72 @@ public class GradientDescentTest {
 
         id = new NeuralNetwork(weightsId);
 
-        Sample s1 = new Sample(true, new double[]{1});
-        samples1 = new Sample[]{s1};
-        validationSamples1 = new Sample[]{s1};
-        
-        Sample s2 = new Sample(true, new double[] {0});
-        samples2 = new Sample[] {s2};
-        validationSamples2 = new Sample[]{s2};
     }
 
     @Test
     public void testId() {
-        NeuralNetwork trained = NeuralNetworkLearning.gradienDescent(id, samples1, validationSamples1, 0.1, (Integer) -> 0.1);
+        Sample s = new Sample(true, new double[]{1});
+        samples = new Sample[]{s};
+        validationSamples = new Sample[]{s};
+
+        NeuralNetwork trained = NeuralNetworkLearning.gradienDescent(id, samples, validationSamples, 0.1, (Integer) -> 0.1);
         assertEquals(trained.getWeights(), id.getWeights(), "No training should have been made to network.");
     }
 
     @Test
     public void testLearing() {
-        NeuralNetwork trained = NeuralNetworkLearning.gradienDescent(id, samples2, validationSamples2, 0.1, (Integer) -> 0.1);
+        Sample s = new Sample(true, new double[]{0});
+        samples = new Sample[]{s};
+        validationSamples = new Sample[]{s};
+
+        NeuralNetwork trained = NeuralNetworkLearning.gradienDescent(id, samples, validationSamples, 0.1, (Integer) -> 0.1);
         assertNotEquals(trained.getWeights(), id.getWeights(), "Neural network should have learned something.");
+        // test bias
+        assertTrue(trained.getNeuronWeight(1, 0, 0) > 0, "Bias should have risen.");
+    }
+
+    @Test
+    public void testLearningMultipleInputNeurons() {
+        Sample s = new Sample(false, new double[]{1, 1});
+        samples = new Sample[]{s};
+        validationSamples = new Sample[]{s};
+
+        Matrix[] weightsId = new Matrix[1];
+        weightsId[0] = new Matrix(new double[][]{{1, 1, 1}});
+
+        n = new NeuralNetwork(weightsId);
+
+        NeuralNetwork trained = NeuralNetworkLearning.gradienDescent(n, samples, validationSamples, 0.1, (Integer) -> 0.1);
+        assertNotEquals(trained.getWeights(), id.getWeights(), "Neural network should have learned something.");
+        // test bias
+        assertTrue(trained.getNeuronWeight(1, 0, 0) < 0, "Bias should have dropped.");
+        // test 1st input
+        assertTrue(trained.getNeuronWeight(1, 0, 1) < 0, "Weight should have dropped.");
+        // test 2nd input
+        assertTrue(trained.getNeuronWeight(1, 0, 2) < 0, "Weight should have dropped.");
+    }
+
+    @Test
+    public void testLearningMultipleLayers() {
+        Sample s = new Sample(true, new double[]{1});
+        samples = new Sample[]{s};
+        validationSamples = new Sample[]{s};
+
+        Matrix[] weightsId = new Matrix[2];
+        weightsId[0] = new Matrix(new double[][]{{1, 1}});
+        weightsId[1] = new Matrix(new double[][]{{1, 1}});
+
+        n = new NeuralNetwork(weightsId);
+
+        NeuralNetwork trained = NeuralNetworkLearning.gradienDescent(n, samples, validationSamples, 0.1, (Integer) -> 0.1);
+        assertNotEquals(trained.getWeights(), id.getWeights(), "Neural network should have learned something.");
+        // test bias hidden neuron
+        assertTrue(trained.getNeuronWeight(1, 0, 0) < 1, "Bias should have dropped.");
+        // test input
+        assertTrue(trained.getNeuronWeight(1, 0, 1) < 1, "Weight should have dropped.");
+        // test bias of output neuron
+        assertTrue(trained.getNeuronWeight(2, 0, 0) < 1, "Bias should have dropped.");
+        // test hidden neuron -> output neuron
+        assertTrue(trained.getNeuronWeight(2, 0, 1) < 1, "Weight should have dropped.");
     }
 }
