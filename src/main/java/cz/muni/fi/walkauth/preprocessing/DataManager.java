@@ -216,27 +216,27 @@ public class DataManager {
 		}
 	}
 
-	public List<Sample> getTrainData() {
-		return trainingData;
+	public Sample[] getTrainingData() {
+		return trainingData.toArray(new Sample[trainingData.size()]);
 	}
 
-	public void setTrainData(List<Sample> trainData) {
+	public void setTrainingData(List<Sample> trainData) {
 		this.trainingData = trainData;
 	}
 
-	public List<Sample> getTestData() {
-		return testingData;
+	public Sample[] getTestingData() {
+		return testingData.toArray(new Sample[testingData.size()]);
 	}
 
-	public void setTestData(List<Sample> testData) {
+	public void setTestingData(List<Sample> testData) {
 		this.testingData = testData;
 	}
 
-	public List<Sample> getVerifyData() {
-		return validationData;
+	public Sample[] getValidationData() {
+		return validationData.toArray(new Sample[validationData.size()]);
 	}
 
-	public void setVerifyData(List<Sample> verifyData) {
+	public void setValidationData(List<Sample> verifyData) {
 		this.validationData = verifyData;
 	}
 

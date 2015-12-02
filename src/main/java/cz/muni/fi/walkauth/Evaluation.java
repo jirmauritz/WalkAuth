@@ -20,13 +20,21 @@ public class Evaluation {
 		int n = samples.length;
 		double[] predictedValues = new double[n];
 		double[] actualValues = new double[n];
-		for (int i=0; i<n; i++) {
+		for (int i = 0; i < n; i++) {
 			predictedValues[i] = neuralNetwork.computeOutput(Matrix.columnVector(samples[i].getEntries()));
-			actualValues[i] = ActivationUtils.labelValue(samples[i]);	
+			actualValues[i] = ActivationUtils.labelValue(samples[i]);
 		}
 
 		double error = MathUtils.squareError(predictedValues, actualValues);
 		return error;
+	}
+
+	public static double computeRMSE(NeuralNetwork neuralNetwork, Sample[] samples) {
+		return 0;
+	}
+
+	public static double computeAccuracy(NeuralNetwork neuralNetwork, Sample[] samples) {
+		return 0;
 	}
 
 }

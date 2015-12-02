@@ -11,8 +11,6 @@ import java.util.stream.DoubleStream;
  */
 public class NeuralNetworkLearning {
 
-    public static final int MAX_ITERATIONS = 100;
-
     /**
      * Backpropagation algorithm for computing gradient of error function.
      *
@@ -97,7 +95,7 @@ public class NeuralNetworkLearning {
      * learning speed (epsilon from slides)
      * @return trained neural network
      */
-    public static NeuralNetwork gradienDescent(NeuralNetwork neuralNetwork, Sample[] trainingData, Sample[] validationData, double acceptableError, Function<Integer, Double> learningSpeed) {
+    public static NeuralNetwork gradienDescent(NeuralNetwork neuralNetwork, Sample[] trainingData, Sample[] validationData, double acceptableError, Function<Integer, Double> learningSpeed, int maxIterations) {
         double error;
         int step = 0;
         int numberOfLayers = neuralNetwork.getWeights().length;
@@ -107,7 +105,7 @@ public class NeuralNetworkLearning {
 
         System.out.println("Begining gradient descent. Prior error is: " + error);
 
-        while (error > acceptableError && step < MAX_ITERATIONS) {
+        while (error > acceptableError && step < maxIterations) {
             step++;
             Matrix[] newLayers = new Matrix[numberOfLayers];
             Matrix[] errorDerivationsByWeight = backpropagation(trainedNeuralNetwork, trainingData);
@@ -128,7 +126,7 @@ public class NeuralNetworkLearning {
         if (error <= acceptableError) {
             System.out.println("Gradient descent finnished with error being lower than acceptable error.");
         } else {
-            System.out.println("Gradient descent finnished due to exceeding " + MAX_ITERATIONS + " iterations.");
+            System.out.println("Gradient descent finnished due to exceeding " + maxIterations + " iterations.");
         }
         return trainedNeuralNetwork;
     }
@@ -217,12 +215,13 @@ public class NeuralNetworkLearning {
      * @param acceptableError maximal acceptable error
      * @param learningSpeed function that for the given number of passes returns
      * learning speed (epsilon from slides)
+	 * @param maxIterations limit for iterations
      * @return Returns trained neural network
      */
-    public static NeuralNetwork trainNeuralNetwork(int[] networkTopology, Sample[] trainingData, Sample[] validationData, double acceptableError, Function<Integer, Double> learningSpeed) {
+    public static NeuralNetwork trainNeuralNetwork(int[] networkTopology, Sample[] trainingData, Sample[] validationData, double acceptableError, Function<Integer, Double> learningSpeed, int maxIterations) {
         NeuralNetwork empty = new NeuralNetwork(networkTopology);
         NeuralNetwork randomlyInitializedNetwork = initializeWeights(empty);
-        return gradienDescent(randomlyInitializedNetwork, trainingData, validationData, acceptableError, learningSpeed);
+        return gradienDescent(randomlyInitializedNetwork, trainingData, validationData, acceptableError, learningSpeed, maxIterations);
     }
 
 }
