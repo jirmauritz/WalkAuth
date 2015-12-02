@@ -30,11 +30,34 @@ public class Evaluation {
 	}
 
 	public static double computeRMSE(NeuralNetwork neuralNetwork, Sample[] samples) {
-		return 0;
+		int n = samples.length;
+		double[] predictedValues = new double[n];
+		double[] actualValues = new double[n];
+		for (int i = 0; i < n; i++) {
+			predictedValues[i] = neuralNetwork.computeOutput(Matrix.columnVector(samples[i].getEntries()));
+			actualValues[i] = ActivationUtils.labelValue(samples[i]);
+		}
+
+		double error = MathUtils.rmse(predictedValues, actualValues);
+		return error;
 	}
 
 	public static double computeAccuracy(NeuralNetwork neuralNetwork, Sample[] samples) {
-		return 0;
+		int n = samples.length;
+        
+        if (n == 0) {
+            return 0.0;
+        }
+        
+        int correctCount = 0;
+		for (int i = 0; i < n; i++) {
+			boolean predictedLabel = neuralNetwork.computeOutput(Matrix.columnVector(samples[i].getEntries())) >= 0;
+			boolean correct = predictedLabel == samples[i].isPositiveUserData();
+            correctCount += correct ? 1 : 0;
+		}
+
+		double accuracy = (float) correctCount / n;
+		return accuracy;
 	}
 
 }
