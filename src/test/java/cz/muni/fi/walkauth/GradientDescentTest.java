@@ -36,7 +36,7 @@ public class GradientDescentTest {
         samples = new Sample[]{s};
         validationSamples = new Sample[]{s};
 
-        NeuralNetwork trained = NeuralNetworkLearning.gradienDescent(id, samples, validationSamples, 0.1, (Integer) -> 0.1, 100);
+        NeuralNetwork trained = NeuralNetworkLearning.gradienDescent(id, samples, validationSamples, 0.1, (Integer, Double) -> 0.1, 100);
         assertEquals(trained.getWeights(), id.getWeights(), "No training should have been made to network.");
     }
 
@@ -46,7 +46,7 @@ public class GradientDescentTest {
         samples = new Sample[]{s};
         validationSamples = new Sample[]{s};
 
-        NeuralNetwork trained = NeuralNetworkLearning.gradienDescent(id, samples, validationSamples, 0.1, (Integer) -> 0.1, 100);
+        NeuralNetwork trained = NeuralNetworkLearning.gradienDescent(id, samples, validationSamples, 0.1, (Integer, Double) -> 0.1, 100);
         assertNotEquals(trained.getWeights(), id.getWeights(), "Neural network should have learned something.");
         // test bias
         assertTrue(trained.getNeuronWeight(1, 0, 0) > 0, "Bias should have risen.");
@@ -63,7 +63,7 @@ public class GradientDescentTest {
 
         n = new NeuralNetwork(weightsId);
 
-        NeuralNetwork trained = NeuralNetworkLearning.gradienDescent(n, samples, validationSamples, 0.1, (Integer) -> 0.1, 100);
+        NeuralNetwork trained = NeuralNetworkLearning.gradienDescent(n, samples, validationSamples, 0.1, (Integer, Double) -> 0.1, 100);
         assertNotEquals(trained.getWeights(), id.getWeights(), "Neural network should have learned something.");
         // test bias
         assertTrue(trained.getNeuronWeight(1, 0, 0) < 0, "Bias should have dropped.");
@@ -85,7 +85,7 @@ public class GradientDescentTest {
 
         n = new NeuralNetwork(weightsId);
 
-        NeuralNetwork trained = NeuralNetworkLearning.gradienDescent(n, samples, validationSamples, 0.1, (Integer) -> 0.1, 100);
+        NeuralNetwork trained = NeuralNetworkLearning.gradienDescent(n, samples, validationSamples, 0.1, (Integer, Double) -> 0.1, 100);
         assertNotEquals(trained.getWeights(), id.getWeights(), "Neural network should have learned something.");
         // test bias hidden neuron
         assertTrue(trained.getNeuronWeight(1, 0, 0) < 1, "Bias should have dropped.");

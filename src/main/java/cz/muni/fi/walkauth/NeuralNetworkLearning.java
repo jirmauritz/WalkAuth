@@ -3,14 +3,18 @@ package cz.muni.fi.walkauth;
 import cz.muni.fi.walkauth.preprocessing.Sample;
 import java.util.Arrays;
 import java.util.Random;
-import java.util.function.Function;
+import java.util.function.BiFunction;
 import java.util.stream.DoubleStream;
+import org.apache.log4j.Logger;
+import org.apache.log4j.RollingFileAppender;
 
 /**
  *
  * @author Jaroslav Cechak
  */
 public class NeuralNetworkLearning {
+
+    private static final Logger logger = Logger.getLogger(NeuralNetworkLearning.class);
 
     /**
      * Backpropagation algorithm for computing gradient of error function.
@@ -134,42 +138,83 @@ public class NeuralNetworkLearning {
      * learning speed (epsilon from slides)
      * @return trained neural network
      */
-    public static NeuralNetwork gradienDescent(NeuralNetwork neuralNetwork, Sample[] trainingData, Sample[] validationData, double acceptableError, Function<Integer, Double> learningSpeed, int maxIterations) {
+    public static NeuralNetwork gradienDescent(NeuralNetwork neuralNetwork, Sample[] trainingData, Sample[] validationData, double acceptableError, BiFunction<Integer, Double, Double> learningSpeed, int maxIterations) {
         double error;
         int step = 0;
         int numberOfLayers = neuralNetwork.getWeights().length;
+        boolean isLearning = true;
         // copy the given neural network
         NeuralNetwork trainedNeuralNetwork = new NeuralNetwork(neuralNetwork.getWeights());
         error = Evaluation.computeError(trainedNeuralNetwork, validationData);
 
-        System.out.println("Begining gradient descent. Prior error is: " + error);
+        printHeader();
+        log(new String[]{
+            Integer.toString(step),
+            String.format("%.4f", error),
+            String.format("%.4f", Evaluation.computeRMSE(trainedNeuralNetwork, validationData)),
+            String.format("%.4f", Evaluation.computeAccuracy(trainedNeuralNetwork, validationData)),
+            String.format("%.4f", Evaluation.computeError(trainedNeuralNetwork, trainingData)),
+            String.format("%.4f", Evaluation.computeRMSE(trainedNeuralNetwork, trainingData)),
+            String.format("%.4f", Evaluation.computeAccuracy(trainedNeuralNetwork, trainingData))
+        });
 
-        while (error > acceptableError && step < maxIterations) {
+        while (error > acceptableError && step < maxIterations && isLearning) {
             step++;
             Matrix[] newLayers = new Matrix[numberOfLayers];
             Matrix[] errorDerivationsByWeight = normalizedGradient(trainedNeuralNetwork, trainingData);
 
             for (int i = 0; i < numberOfLayers; i++) {
-                double speed = learningSpeed.apply(step);
+                double speed = learningSpeed.apply(step, error);
                 Matrix errorDerivationByWeight = errorDerivationsByWeight[i];
                 // subtract gradient times speed to the original weights
-                newLayers[i] = trainedNeuralNetwork.getWeights()[i].add(errorDerivationByWeight.multiplyByScalar(-1 * speed));
+                newLayers[i] = trainedNeuralNetwork.getWeights()[i].add(errorDerivationByWeight.multiplyByScalar(-1 * speed)); /*((error < 100) ? (error / trainingData.length) : 1)*/
+
             }
-            
-            System.out.println("learned anything? " + !Arrays.equals(newLayers, trainedNeuralNetwork.getWeights()));
-            
+            isLearning = !Arrays.equals(newLayers, trainedNeuralNetwork.getWeights());
+
             trainedNeuralNetwork.setWeights(newLayers);
             error = Evaluation.computeError(trainedNeuralNetwork, validationData);
 
-            System.out.println("step: " + step + ", error: " + error);
+            log(new String[]{
+                Integer.toString(step),
+                String.format("%.4f", error),
+                String.format("%.4f", Evaluation.computeRMSE(trainedNeuralNetwork, validationData)),
+                String.format("%.4f", Evaluation.computeAccuracy(trainedNeuralNetwork, validationData)),
+                String.format("%.4f", Evaluation.computeError(trainedNeuralNetwork, trainingData)),
+                String.format("%.4f", Evaluation.computeRMSE(trainedNeuralNetwork, trainingData)),
+                String.format("%.4f", Evaluation.computeAccuracy(trainedNeuralNetwork, trainingData))
+            });
         }
 
         if (error <= acceptableError) {
             System.out.println("Gradient descent finnished with error being lower than acceptable error.");
-        } else {
+        } else if (step == maxIterations) {
             System.out.println("Gradient descent finnished due to exceeding " + maxIterations + " iterations.");
+        } else {
+            System.out.println("Gradient descent finnished due network not learning anything.");
         }
         return trainedNeuralNetwork;
+    }
+
+    private static void printHeader() {
+        // rollover file so that csv file is clear
+        ((RollingFileAppender) logger.getAppender("csv.file")).rollOver();
+        // print header of csv
+        logger.info("iteration, validation error, validation RMSE, validation accuracy, training error, training RMSE, training accuracy");
+
+    }
+
+    private static void log(String[] message) {
+        // concatenate all the information into one line separted with commas
+        StringBuilder sb = new StringBuilder();
+        if (message.length >= 1) {
+            sb.append(message[0]);
+        }
+        for (int i = 1; i < message.length; i++) {
+            sb.append(", ").append(message[i]);
+        }
+
+        logger.info(sb.toString());
     }
 
     /**
@@ -234,10 +279,10 @@ public class NeuralNetworkLearning {
      * @param acceptableError maximal acceptable error
      * @param learningSpeed function that for the given number of passes returns
      * learning speed (epsilon from slides)
-	 * @param maxIterations limit for iterations
+     * @param maxIterations limit for iterations
      * @return Returns trained neural network
      */
-    public static NeuralNetwork trainNeuralNetwork(int[] networkTopology, Sample[] trainingData, Sample[] validationData, double acceptableError, Function<Integer, Double> learningSpeed, int maxIterations) {
+    public static NeuralNetwork trainNeuralNetwork(int[] networkTopology, Sample[] trainingData, Sample[] validationData, double acceptableError, BiFunction<Integer, Double, Double> learningSpeed, int maxIterations) {
         NeuralNetwork empty = new NeuralNetwork(networkTopology);
         //System.out.println("New neural network has been created." + empty);
         NeuralNetwork randomlyInitializedNetwork = initializeWeights(empty);

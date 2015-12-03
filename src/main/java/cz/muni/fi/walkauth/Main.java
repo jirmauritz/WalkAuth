@@ -44,8 +44,14 @@ public class Main {
 				topology,
 				dataManager.getTrainingData(), 
 				dataManager.getValidationData(), 
-				Float.parseFloat(prop.getProperty("acceptableError")),
-				(Integer) -> Double.parseDouble(prop.getProperty("learningSpeed")),
+				Float.parseFloat(prop.getProperty("acceptableError")),                      
+             
+				(Integer i, Double error) -> {
+                                    double speed = Double.parseDouble(prop.getProperty("learningSpeed"));
+                                    double treshold = Double.parseDouble(prop.getProperty("localMinimumTreshold"));
+                                    double magic = (error < treshold) ? (error / dataManager.getTrainingData().length) : 1;
+                                    return Double.valueOf(speed * magic);
+                                },
 				Integer.parseInt(prop.getProperty("maxIterations")));
 		
 		// evaluate
