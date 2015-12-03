@@ -84,6 +84,44 @@ public class NeuralNetworkLearning {
 
         return gradient;
     }
+    
+    /**
+     * Computes normalized gradient of error function.
+     *
+     * @param neuralNetwork configuration of neural network
+     * @param data data for evaluating the error
+     * @return partial derivatives of error function with respect to each
+     * weight, normalized to a unit vector
+     */
+    public static Matrix[] normalizedGradient(NeuralNetwork neuralNetwork, Sample[] data) {
+        Matrix[] gradient = backpropagation(neuralNetwork, data);
+        
+        double squares = 0.0;
+        for (int l = 0; l < gradient.length; l++) {
+            for (int i = 0; i < gradient[l].getRowCount(); i++) {
+                for (int j = 0; j < gradient[l].getColCount(); j++) {
+                    double w = gradient[l].get(i, j);
+                    squares += w * w;
+                }
+            }
+        }
+        
+        if (squares < 0.0001) {
+            return gradient;
+        }
+        
+        double size = Math.sqrt(squares);
+        for (int l = 0; l < gradient.length; l++) {
+            for (int i = 0; i < gradient[l].getRowCount(); i++) {
+                for (int j = 0; j < gradient[l].getColCount(); j++) {
+                    double w = gradient[l].get(i,j);
+                    gradient[l].set(i, j, w / size);
+                }
+            }
+        }
+        
+        return gradient;  
+    }
 
     /**
      * Gradient descent algorithm for neural network training.
@@ -109,7 +147,7 @@ public class NeuralNetworkLearning {
         while (error > acceptableError && step < maxIterations) {
             step++;
             Matrix[] newLayers = new Matrix[numberOfLayers];
-            Matrix[] errorDerivationsByWeight = backpropagation(trainedNeuralNetwork, trainingData);
+            Matrix[] errorDerivationsByWeight = normalizedGradient(trainedNeuralNetwork, trainingData);
 
             for (int i = 0; i < numberOfLayers; i++) {
                 double speed = learningSpeed.apply(step);

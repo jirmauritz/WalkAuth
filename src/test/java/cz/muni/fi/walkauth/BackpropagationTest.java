@@ -84,7 +84,7 @@ public class BackpropagationTest {
      * Test of backpropagation for a no sample.
      */
     @Test
-    public void test_no_sample() {
+    public void testNoSample() {
         // given
         NeuralNetwork ANY_NETWORK = new NeuralNetwork(1, 1);
         Sample[] data = {};
@@ -101,7 +101,7 @@ public class BackpropagationTest {
      * Test of backpropagation for a simple situation with zero gradient.
      */
     @Test
-    public void test_zero_gradient_for_positive_positive() {
+    public void testZeroGradientForPositivePositive() {
         // given
         NeuralNetwork neuralNetwork = new NeuralNetwork(new Matrix[]{
             new Matrix(new double[][]{{1.0, 0.0}})
@@ -301,6 +301,60 @@ public class BackpropagationTest {
         // assert
         Matrix[] expectedGradient = computeGradientNumerically(neuralNetwork, data);
         assertMatrixListsAlmostEqual(backpropGradient, expectedGradient);
+    }    
+    
+    /**
+     * Test for normalized gradient which should be zero
+     */
+    @Test
+    public void testZeroNormalizedGradientForPositivePositive() {
+        // given
+        NeuralNetwork neuralNetwork = new NeuralNetwork(new Matrix[]{
+            new Matrix(new double[][]{{1.0, 0.0}})
+        });
+        double[] ANY_INPUT = new double[]{0};
+        Sample[] data = {new Sample(true, ANY_INPUT)};
+
+        // action
+        Matrix[] gradient = NeuralNetworkLearning.normalizedGradient(neuralNetwork, data);
+
+        // assert
+        Matrix[] expectedGradient = {Matrix.zeros(1, 2)};
+        assertMatrixListsAlmostEqual(gradient, expectedGradient);
+    }
+    
+    
+    /**
+     * Check that normalized gradient has a size of 1.
+     */
+    @Test
+    public void testNormalizedGradientSize1() {
+        Matrix[] weights = {
+            new Matrix(new double[][]{{0.5, 0.4, 0.3, 0.6}, {-0.1, 0.2, 0.6, 0.1}}),
+            new Matrix(new double[][]{{0.7, -0.8, 1.2}, {0.1, 0.5, -1.2}, {-0.2, -0.4, 0.5}}),
+            new Matrix(new double[][]{{0.1, -0.4, 1.0, 0.8}, {0.2, 0.4, 0.8, -0.5}}),
+            new Matrix(new double[][]{{0.5, 0.7, -0.5}})
+        };
+        Sample[] data = {
+            new Sample(false, new double[]{1.0, 0.7, 0.1}),
+            new Sample(true, new double[]{-1.0, 0.6, -0.6}),
+            new Sample(true, new double[]{0.0, 0.1, 1.1})
+        };        
+        NeuralNetwork neuralNetwork = new NeuralNetwork(weights);
+        
+        Matrix[] gradient = NeuralNetworkLearning.normalizedGradient(neuralNetwork, data);
+        
+        double squares = 0.0;
+        for (int l = 0; l < gradient.length; l++) {
+            for (int i = 0; i < gradient[l].getRowCount(); i++) {
+                for (int j = 0; j < gradient[l].getColCount(); j++) {
+                    double w = gradient[l].get(i, j);
+                    squares += w * w;
+                }
+            }
+        }
+        
+        assertEquals(squares, 1.0);
     }
 
 }
