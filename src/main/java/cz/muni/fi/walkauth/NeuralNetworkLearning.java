@@ -88,7 +88,7 @@ public class NeuralNetworkLearning {
 
         return gradient;
     }
-    
+
     /**
      * Computes normalized gradient of error function.
      *
@@ -99,7 +99,7 @@ public class NeuralNetworkLearning {
      */
     public static Matrix[] normalizedGradient(NeuralNetwork neuralNetwork, Sample[] data) {
         Matrix[] gradient = backpropagation(neuralNetwork, data);
-        
+
         double squares = 0.0;
         for (int l = 0; l < gradient.length; l++) {
             for (int i = 0; i < gradient[l].getRowCount(); i++) {
@@ -109,22 +109,22 @@ public class NeuralNetworkLearning {
                 }
             }
         }
-        
+
         if (squares < 0.0001) {
             return gradient;
         }
-        
+
         double size = Math.sqrt(squares);
         for (int l = 0; l < gradient.length; l++) {
             for (int i = 0; i < gradient[l].getRowCount(); i++) {
                 for (int j = 0; j < gradient[l].getColCount(); j++) {
-                    double w = gradient[l].get(i,j);
+                    double w = gradient[l].get(i, j);
                     gradient[l].set(i, j, w / size);
                 }
             }
         }
-        
-        return gradient;  
+
+        return gradient;
     }
 
     /**
@@ -153,9 +153,15 @@ public class NeuralNetworkLearning {
             String.format("%.4f", error),
             String.format("%.4f", Evaluation.computeRMSE(trainedNeuralNetwork, validationData)),
             String.format("%.4f", Evaluation.computeAccuracy(trainedNeuralNetwork, validationData)),
+            String.format("%.4f", Evaluation.computePrecision(trainedNeuralNetwork, validationData)),
+            String.format("%.4f", Evaluation.computeRecall(trainedNeuralNetwork, validationData)),
+            String.format("%.4f", Evaluation.computeF1(trainedNeuralNetwork, validationData)),
             String.format("%.4f", Evaluation.computeError(trainedNeuralNetwork, trainingData)),
             String.format("%.4f", Evaluation.computeRMSE(trainedNeuralNetwork, trainingData)),
-            String.format("%.4f", Evaluation.computeAccuracy(trainedNeuralNetwork, trainingData))
+            String.format("%.4f", Evaluation.computeAccuracy(trainedNeuralNetwork, trainingData)),
+            String.format("%.4f", Evaluation.computePrecision(trainedNeuralNetwork, trainingData)),
+            String.format("%.4f", Evaluation.computeRecall(trainedNeuralNetwork, trainingData)),
+            String.format("%.4f", Evaluation.computeF1(trainedNeuralNetwork, trainingData))
         });
 
         while (error > acceptableError && step < maxIterations && isLearning) {
@@ -180,9 +186,15 @@ public class NeuralNetworkLearning {
                 String.format("%.4f", error),
                 String.format("%.4f", Evaluation.computeRMSE(trainedNeuralNetwork, validationData)),
                 String.format("%.4f", Evaluation.computeAccuracy(trainedNeuralNetwork, validationData)),
+                String.format("%.4f", Evaluation.computePrecision(trainedNeuralNetwork, validationData)),
+                String.format("%.4f", Evaluation.computeRecall(trainedNeuralNetwork, validationData)),
+                String.format("%.4f", Evaluation.computeF1(trainedNeuralNetwork, validationData)),
                 String.format("%.4f", Evaluation.computeError(trainedNeuralNetwork, trainingData)),
                 String.format("%.4f", Evaluation.computeRMSE(trainedNeuralNetwork, trainingData)),
-                String.format("%.4f", Evaluation.computeAccuracy(trainedNeuralNetwork, trainingData))
+                String.format("%.4f", Evaluation.computeAccuracy(trainedNeuralNetwork, trainingData)),
+                String.format("%.4f", Evaluation.computePrecision(trainedNeuralNetwork, trainingData)),
+                String.format("%.4f", Evaluation.computeRecall(trainedNeuralNetwork, trainingData)),
+                String.format("%.4f", Evaluation.computeF1(trainedNeuralNetwork, trainingData))
             });
         }
 
@@ -197,10 +209,10 @@ public class NeuralNetworkLearning {
     }
 
     private static void printHeader() {
-        // rollover file so that csv file is clear
+        // rollover file so that new csv file is created
         ((RollingFileAppender) logger.getAppender("csv.file")).rollOver();
         // print header of csv
-        logger.info("iteration, validation error, validation RMSE, validation accuracy, training error, training RMSE, training accuracy");
+        logger.info("iteration, validation error, validation RMSE, validation accuracy, validation precision, validation recall, validation F1, training error, training RMSE, training accuracy, training precision, training recall, training F1");
 
     }
 
