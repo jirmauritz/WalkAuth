@@ -52,10 +52,16 @@ public class Main {
 		double error = Evaluation.computeError(network, dataManager.getTestingData());
 		double rmse = Evaluation.computeRMSE(network, dataManager.getTestingData());
 		double accuracy = Evaluation.computeAccuracy(network, dataManager.getTestingData());
+        double precision = Evaluation.computePrecision(network, dataManager.getTestingData());
+        double recall = Evaluation.computeRecall(network, dataManager.getTestingData());
+        double f1 = Evaluation.computeF1(network, dataManager.getTestingData());
 		
 		System.out.println("Error: " + error);
 		System.out.println("RMSE: " + rmse);
 		System.out.println("Accuracy: " + accuracy);
+        System.out.println("Precision: " + precision);
+        System.out.println("Recall: " + recall);
+        System.out.println("F1: " + f1);
 	}
 
 	private static Properties setProperties() throws IOException {

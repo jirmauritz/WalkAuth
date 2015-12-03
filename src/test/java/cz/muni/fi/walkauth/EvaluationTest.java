@@ -27,7 +27,7 @@ public class EvaluationTest {
 	
 	@Mock
 	private NeuralNetwork negativeNeuralNetwork;
-	
+
 	private final double[] ANY_INPUT = new double[]{0};
 	private final Sample[] onePositiveSample = {new Sample(true, ANY_INPUT)};
 	private final Sample[] oneNegativeSample = {new Sample(false, ANY_INPUT)};
@@ -191,7 +191,7 @@ public class EvaluationTest {
 	 * Test RMSE for more samples
 	 */
 	@Test
-	public void testRMSEMoreSamples() {
+	public void testComputeRMSEMoreSamples() {
 		
 		Sample sample1 = new Sample(true, new double[]{0.7});
 		Sample sample2 = new Sample(false, new double[]{0.8});
@@ -267,5 +267,157 @@ public class EvaluationTest {
         assertEquals(result4, 0.25, EPSILON);
         assertEquals(result5, 0.75, EPSILON);
         assertEquals(result6, 0.4, EPSILON);
+	}    
+        
+	/**
+	 * Test precision from 1 sample
+	 */
+	@Test
+	public void testComputePrecisonOneSample() {				
+		double result1 = Evaluation.computePrecision(halfPositiveNeuralNetwork, onePositiveSample);
+		assertEquals(result1, 1.0, EPSILON);
+		
+		double result2 = Evaluation.computePrecision(positiveNeuralNetwork, onePositiveSample);
+		assertEquals(result2, 1.0, EPSILON);
+		
+		double result3 = Evaluation.computePrecision(negativeNeuralNetwork, onePositiveSample);
+		assertEquals(result3, 1.0, EPSILON);
+		
+		double result4 = Evaluation.computePrecision(negativeNeuralNetwork, oneNegativeSample);
+		assertEquals(result4, 1.0, EPSILON);
+		
+		double result5 = Evaluation.computePrecision(halfPositiveNeuralNetwork, oneNegativeSample);
+		assertEquals(result5, 0.0, EPSILON);
+		
+		double result6 = Evaluation.computePrecision(positiveNeuralNetwork, oneNegativeSample);
+		assertEquals(result6, 0.0, EPSILON);
+	}    
+            
+    /**
+	 * Test precision for more samples
+	 */
+	@Test
+	public void testPrecisionMoreSamples() {
+		
+		Sample sample1 = new Sample(true, new double[]{0.7});
+		Sample sample2 = new Sample(false, new double[]{0.8});
+
+		double result1 = Evaluation.computePrecision(positiveNeuralNetwork, new Sample[] {sample1, sample1, sample1});
+        double result2 = Evaluation.computePrecision(halfPositiveNeuralNetwork, new Sample[] {sample2, sample2, sample2});
+        double result3 = Evaluation.computePrecision(positiveNeuralNetwork, new Sample[] {sample1, sample2});
+        double result4 = Evaluation.computePrecision(halfPositiveNeuralNetwork, new Sample[] {sample1, sample2, sample1, sample1});
+        double result5 = Evaluation.computePrecision(negativeNeuralNetwork, new Sample[] {sample1, sample2, sample2, sample2});
+        double result6 = Evaluation.computePrecision(halfPositiveNeuralNetwork, new Sample[] {sample1, sample2, sample2, sample1, sample2});
+		
+        assertEquals(result1, 1.0, EPSILON);
+		assertEquals(result2, 0.0, EPSILON);
+        assertEquals(result3, 0.5, EPSILON);
+        assertEquals(result4, 0.75, EPSILON);
+        assertEquals(result5, 1.0, EPSILON);
+        assertEquals(result6, 0.4, EPSILON);
+	}
+            
+	/**
+	 * Test recall from 1 sample
+	 */
+	@Test
+	public void testComputeRecallOneSample() {				
+		double result1 = Evaluation.computeRecall(halfPositiveNeuralNetwork, onePositiveSample);
+		assertEquals(result1, 1.0, EPSILON);
+		
+		double result2 = Evaluation.computeRecall(positiveNeuralNetwork, onePositiveSample);
+		assertEquals(result2, 1.0, EPSILON);
+		
+		double result3 = Evaluation.computeRecall(negativeNeuralNetwork, onePositiveSample);
+		assertEquals(result3, 0.0, EPSILON);
+		
+		double result4 = Evaluation.computeRecall(negativeNeuralNetwork, oneNegativeSample);
+		assertEquals(result4, 1.0, EPSILON);
+		
+		double result5 = Evaluation.computeRecall(halfPositiveNeuralNetwork, oneNegativeSample);
+		assertEquals(result5, 1.0, EPSILON);
+		
+		double result6 = Evaluation.computeRecall(positiveNeuralNetwork, oneNegativeSample);
+		assertEquals(result6, 1.0, EPSILON);
+	}
+    
+    /**
+	 * Test recall for more samples
+	 */
+	@Test
+	public void testRecallMoreSamples() {
+		
+		Sample sampleTP = new Sample(true,  new double[]{0.5});
+        Sample sampleTN = new Sample(false, new double[]{-0.5});
+		Sample sampleFP = new Sample(false, new double[]{0.5});
+        Sample sampleFN = new Sample(true,  new double[]{-0.5});
+
+		double result1 = Evaluation.computeRecall(positiveNeuralNetwork, new Sample[] {sampleTP, sampleTP, sampleTP});
+        double result2 = Evaluation.computeRecall(halfPositiveNeuralNetwork, new Sample[] {sampleTP, sampleFP, sampleTP, sampleTP});
+        double result3 = Evaluation.computeRecall(negativeNeuralNetwork, new Sample[] {sampleTN, sampleFN, sampleFN, sampleFN});
+        
+        double result4 = Evaluation.computeRecall(NeuralNetwork.IDENTITY, new Sample[] {sampleTP, sampleTN, sampleFP, sampleFN});
+        double result5 = Evaluation.computeRecall(NeuralNetwork.IDENTITY, new Sample[] {sampleTP, sampleTN, sampleFP, sampleFN, sampleTP, sampleTP});
+        double result6 = Evaluation.computeRecall(NeuralNetwork.IDENTITY, new Sample[] {sampleTP, sampleTN, sampleFP, sampleFN, sampleFN, sampleFN});
+		
+        assertEquals(result1, 1.0, EPSILON);
+		assertEquals(result2, 1.0, EPSILON);
+        assertEquals(result3, 0.0, EPSILON);
+        
+        assertEquals(result4, 0.5, EPSILON);
+        assertEquals(result5, 0.75, EPSILON);
+        assertEquals(result6, 0.25, EPSILON);
+	}
+                
+	/**
+	 * Test F1 from 1 sample
+	 */
+	@Test
+	public void testComputeF1OneSample() {				
+		double result1 = Evaluation.computeF1(halfPositiveNeuralNetwork, onePositiveSample);
+		assertEquals(result1, 1.0, EPSILON);
+		
+		double result2 = Evaluation.computeF1(positiveNeuralNetwork, onePositiveSample);
+		assertEquals(result2, 1.0, EPSILON);
+		
+		double result3 = Evaluation.computeF1(negativeNeuralNetwork, onePositiveSample);
+		assertEquals(result3, 0.0, EPSILON);
+		
+		double result4 = Evaluation.computeF1(negativeNeuralNetwork, oneNegativeSample);
+		assertEquals(result4, 1.0, EPSILON);
+		
+		double result5 = Evaluation.computeF1(halfPositiveNeuralNetwork, oneNegativeSample);
+		assertEquals(result5, 0.0, EPSILON);
+		
+		double result6 = Evaluation.computeF1(positiveNeuralNetwork, oneNegativeSample);
+		assertEquals(result6, 0.0, EPSILON);
+	}
+    
+    /**
+	 * Test computing F1 for more samples
+	 */
+	@Test
+	public void testF1MoreSamples() {
+		
+		Sample sampleTP = new Sample(true,  new double[]{0.5});
+        Sample sampleTN = new Sample(false, new double[]{-0.5});
+		Sample sampleFP = new Sample(false, new double[]{0.5});
+        Sample sampleFN = new Sample(true,  new double[]{-0.5});
+
+		double result1 = Evaluation.computeF1(positiveNeuralNetwork, new Sample[] {sampleTP, sampleTP, sampleTP});
+        double result2 = Evaluation.computeF1(halfPositiveNeuralNetwork, new Sample[] {sampleTP, sampleFP, sampleTP, sampleTP});
+        double result3 = Evaluation.computeF1(negativeNeuralNetwork, new Sample[] {sampleTN, sampleFN, sampleFN, sampleFN});
+        
+        double result4 = Evaluation.computeF1(NeuralNetwork.IDENTITY, new Sample[] {sampleTP, sampleTN, sampleFP, sampleFN});
+        double result5 = Evaluation.computeF1(NeuralNetwork.IDENTITY, new Sample[] {sampleTP, sampleTN, sampleFP, sampleFN, sampleTP, sampleTP});
+        double result6 = Evaluation.computeF1(NeuralNetwork.IDENTITY, new Sample[] {sampleTP, sampleTN, sampleFP, sampleFN, sampleFN, sampleFN});
+		
+        assertEquals(result1, 1.0, EPSILON);
+		assertEquals(result2, 1.5/1.75, EPSILON);
+        assertEquals(result3, 0.0, EPSILON);
+        
+        assertEquals(result4, 0.5, EPSILON);
+        assertEquals(result5, 0.75, EPSILON);
+        assertEquals(result6, 0.3333333334, EPSILON);
 	}
 }
