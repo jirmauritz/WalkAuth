@@ -4,6 +4,9 @@ data/**/*
 # Maven
 target/
 
+# Logs
+logs/
+
 # NetBeans
 nb-configuration.xml
 nbactions.xml

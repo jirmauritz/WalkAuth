@@ -17,31 +17,48 @@ public class DataManager {
 
 	// normalization
 	private Normalization normalization = new Normalization();
-	
+
 	// data
 	private List<Sample> trainingData;
 	private List<Sample> testingData;
 	private List<Sample> validationData;
-	
+
+	/**
+	 * The method prepares data for neural network learning. 
+	 * Covers: 
+	 *	1. load data from files from path defined by dataPath param 
+	 *	2. cut out irrelevant data 
+	 *	3. divide data according to given ratios 
+	 *	4. randomly generate train, test and validation data set 
+	 *	5. normalize data to mean 0 and deviation 1
+	 *
+	 * @param entriesForSample - how many entries should be in one sample where one entry is triple x,y,z
+	 * @param dataPath - file path to the data set
+	 * @param positiveUserFilePath - path to a file, that will be used as positive data (positive user)
+	 * @param trainDataRatio - how much data should be in training data set
+	 * @param testDataRatio - how much data should be in testing data set
+	 * @param validationDataRatio - how much data should be in validation data set
+	 * @throws IOException
+	 */
 	public void prepareData(
 			int entriesForSample,
 			String dataPath,
 			String positiveUserFilePath,
 			float trainDataRatio,
 			float testDataRatio,
-			float verifyDataRatio
+			float validationDataRatio
 	) throws IOException {
-		
+
 		// crear data
 		trainingData = new ArrayList<>();
 		testingData = new ArrayList<>();
 		validationData = new ArrayList<>();
 
 		// verify ratios
-		if (Math.abs(trainDataRatio + testDataRatio + verifyDataRatio - 1) > 0.0001) {
-			System.out.println(trainDataRatio + testDataRatio + verifyDataRatio - 1);
+		if (Math.abs(trainDataRatio + testDataRatio + validationDataRatio - 1) > 0.0001) {
+			System.out.println(trainDataRatio + testDataRatio + validationDataRatio - 1);
 			throw new IllegalArgumentException("Ratios of train " + trainDataRatio
-					+ ", test " + testDataRatio + " and verify data " + verifyDataRatio + " has to be 1 in sum.");
+					+ ", test " + testDataRatio + " and verify data " + validationDataRatio + " has to be 1 in sum.");
 		}
 
 		// load positive user data
@@ -53,7 +70,7 @@ public class DataManager {
 		for (File walkDataFile : sampleDir.listFiles()) {
 			// skip the positive user data file
 			if (walkDataFile.getName().equals(positiveUserFilePath)) {
-				break;
+				continue;
 			}
 			// load walk data
 			negativeUserData.addAll(getSamplesFromFile(walkDataFile, entriesForSample, false));
@@ -75,7 +92,24 @@ public class DataManager {
 
 		// create verify data
 		generateData(validationData, positiveUserData, negativeUserData, positiveUserData.size(), negativeUserData.size());
-		
+
+		// check if the data are independent
+		for (Sample s : trainingData) {
+			if (testingData.contains(s)) {
+				throw new IllegalStateException("Samples of training set appears in testing set.");
+			}
+		}
+		for (Sample s : trainingData) {
+			if (validationData.contains(s)) {
+				throw new IllegalStateException("Samples of training set appears in validation set.");
+			}
+		}
+		for (Sample s : testingData) {
+			if (validationData.contains(s)) {
+				throw new IllegalStateException("Samples of testing set appears in validation set.");
+			}
+		}
+
 		// compute mean and deviation from all
 		normalization.computeMeanAndDeviation(trainingData);
 		// normalize each
@@ -103,7 +137,7 @@ public class DataManager {
 		sb.append(normalization.getMean());
 		sb.append(", original standart deviation: ");
 		sb.append(normalization.getDeviation());
-		sb.append("\n");				
+		sb.append("\n");
 		sb.append("Data density (| positive user, - negative user)\n");
 		sb.append("training data density: [");
 		for (Sample s : trainingData) {
@@ -134,7 +168,7 @@ public class DataManager {
 		}
 		sb.append("]\n");
 		sb.append("Example of first positive testing sample: [");
-		for (int i=0; i<5; i++) {
+		for (int i = 0; i < 5; i++) {
 			sb.append(testingData.get(0).getEntries()[i]);
 			sb.append(", ");
 		}
@@ -145,9 +179,10 @@ public class DataManager {
 	}
 
 	/**
-	 * The returned list of samples contains samples created of entries of that file.
-	 * WARNING: the Samples are always indented to the entriesForSample count, i.e. 
-	 * last (entriesInFile % entriesForSample) entries are thrown away
+	 * The returned list of samples contains samples created of entries of that
+	 * file. WARNING: the Samples are always indented to the entriesForSample
+	 * count, i.e. last (entriesInFile % entriesForSample) entries are thrown
+	 * away.
 	 */
 	private List<Sample> getSamplesFromFile(File file, int entriesForSample, boolean isPositiveUserData) throws IOException {
 		BufferedReader reader;
@@ -157,13 +192,13 @@ public class DataManager {
 
 		// initialize set of samples
 		List<Sample> listOfSamples = new ArrayList<>();
-		double[] entries = new double[3*entriesForSample];
+		double[] entries = new double[3 * entriesForSample];
 		int entryCount = 0;
 
 		String line = reader.readLine();
 		// for every line of file
 		while (line != null) {
-			if (entryCount < 3*entriesForSample) {
+			if (entryCount < 3 * entriesForSample) {
 				String[] coordinates = line.split(",");
 				// check if there are 3 coordinates
 				if (coordinates.length != 4) {
@@ -177,7 +212,8 @@ public class DataManager {
 				// new sample
 				Sample sample = new Sample(isPositiveUserData, entries);
 				listOfSamples.add(sample);
-				// reset counter
+				// reset entries
+				entries = new double[3 * entriesForSample];
 				entryCount = 0;
 			}
 			line = reader.readLine();
@@ -185,6 +221,17 @@ public class DataManager {
 		return listOfSamples;
 	}
 
+	/**
+	 * Randomly selects data from userData and othersData and store them in the
+	 * first param. It takes exactly userNum samples from userData and othersNum
+	 * samples from othersData.
+	 *
+	 * @param data - input/output variable, the samples are added to it
+	 * @param userData - positive data samples
+	 * @param othersData - negative data samples
+	 * @param userNum - number of positive samples to be added
+	 * @param othersNum - number of negative samples to be added
+	 */
 	private void generateData(List<Sample> data, List<Sample> userData, List<Sample> othersData, int userNum, int othersNum) {
 		Random rnd = new Random(System.currentTimeMillis());
 
@@ -242,5 +289,5 @@ public class DataManager {
 
 	public Normalization getNormalization() {
 		return normalization;
-	}	
+	}
 }

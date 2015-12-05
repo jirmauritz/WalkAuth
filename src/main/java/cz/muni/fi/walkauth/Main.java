@@ -27,10 +27,10 @@ public class Main {
 		dataManager.prepareData(
 				Integer.parseInt(prop.getProperty("entriesPerSample")), 
 				prop.getProperty("dataPath"),
-				prop.getProperty("testingUser"),
+				prop.getProperty("positiveUser"),
 				Float.parseFloat(prop.getProperty("trainDataRatio")),
 				Float.parseFloat(prop.getProperty("testDataRatio")),
-				Float.parseFloat(prop.getProperty("verifyDataRatio"))
+				Float.parseFloat(prop.getProperty("validationDataRatio"))
 		);
 		System.out.println(dataManager.dataOverview());
 		
