@@ -1,0 +1,11 @@
+To plot anything there first must be logs from some run of the neural network learning. 
+
+To plot a learning progress, run 
+
+    $ python plot_learning.py
+
+from this directory. To plot final weights distribution of the first layer of hidden neurons run 
+
+    $ python plot_weights.py
+
+Both scripts require pandas, matplotlib and numpy libraries installed and available for python to import. Resulting plots are in form of PDF files located in this directory.

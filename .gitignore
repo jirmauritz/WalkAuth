@@ -7,6 +7,12 @@ target/
 # Logs
 logs/
 
+# Plots
+plot/learning_error.pdf
+plot/learning_rmse.pdf
+plot/learning_f1.pdf
+plot/weights.pdf
+
 # NetBeans
 nb-configuration.xml
 nbactions.xml

@@ -1,5 +1,7 @@
 package cz.muni.fi.walkauth;
 
+import java.util.Locale;
+import java.util.StringJoiner;
 import org.apache.log4j.Logger;
 import org.apache.log4j.RollingFileAppender;
 
@@ -10,6 +12,8 @@ import org.apache.log4j.RollingFileAppender;
  * @author Jaroslav Cechak
  */
 public class LogUtils {
+
+    public static final String DELIMITER = ";";
 
     /**
      * Logger for logging traning progress
@@ -26,27 +30,33 @@ public class LogUtils {
     public static void printLearningHeader() {
         // rollover file so that new csv file is created
         ((RollingFileAppender) LEARNING_LOGGER.getAppender("learning.csv")).rollOver();
+
+        StringJoiner sj = new StringJoiner(DELIMITER);
+        sj.add("iteration")
+                .add("validation error").add("validation RMSE").add("validation accuracy").add("validation precision").add("validation recall").add("validation F1")
+                .add("training error").add("training RMSE").add("training accuracy").add("training precision").add("training recall").add("training F1");
+
         // print header of csv
-        LEARNING_LOGGER.info("iteration,validation error,validation RMSE,validation accuracy,validation precision,validation recall,validation F1,training error,training RMSE,training accuracy,training precision,training recall,training F1");
+        LEARNING_LOGGER.info(sj.toString());
 
     }
 
     /**
      * Prints learning progress into log file
      *
-     * @param message data to be printed
+     * @param values data to be printed
      */
-    public static void logLearning(double[] message) {
+    public static void logLearning(double[] values) {
         // concatenate all the information into one line separted with commas
-        StringBuilder sb = new StringBuilder();
-        if (message.length >= 1) {
-            sb.append(String.format("%.4f", message[0]));
-        }
-        for (int i = 1; i < message.length; i++) {
-            sb.append(",").append(message[i]);
+        StringJoiner sj = new StringJoiner(DELIMITER);
+
+        Locale.setDefault(Locale.ENGLISH);
+        
+        for (double value : values) {
+            sj.add(String.format("%.4f", value));
         }
 
-        LEARNING_LOGGER.info(sb.toString());
+        LEARNING_LOGGER.info(sj.toString());
     }
 
     /**
@@ -58,14 +68,14 @@ public class LogUtils {
         // rollover file so that new csv file is created
         ((RollingFileAppender) WEIGHTS_LOGGER.getAppender("weights.csv")).rollOver();
 
-        StringBuilder sb = new StringBuilder("x1, y1, z1");
+        StringJoiner sj = new StringJoiner(DELIMITER);
 
         for (int i = 1; i <= n.getWeights()[0].getRowCount(); i++) {
-            sb.append(",x").append(i).append(" ,y").append(i).append(",z").append(i);
+            sj.add("x" + i).add("y" + i).add("z" + i);
         }
 
         // print header of csv
-        WEIGHTS_LOGGER.info(sb.toString());
+        WEIGHTS_LOGGER.info(sj.toString());
 
     }
 
@@ -82,24 +92,18 @@ public class LogUtils {
             return;
         }
 
+        Locale.setDefault(Locale.ENGLISH);
+        
         for (int i = 1; i < weights.getColCount(); i += 3) {
 
-            StringBuilder sb = new StringBuilder();
-            sb.append(String.format("%.4f", weights.get(0, i)))
-                    .append(",")
-                    .append(String.format("%.4f", weights.get(0, i + 1)))
-                    .append(",")
-                    .append(String.format("%.4f", weights.get(0, i + 2)));
+            StringJoiner sj = new StringJoiner(DELIMITER);
 
-            for (int j = 1; j < weights.getRowCount(); j++) {
-                sb.append(",")
-                        .append(String.format("%.4f", weights.get(j, i)))
-                        .append(",")
-                        .append(String.format("%.4f", weights.get(j, i + 1)))
-                        .append(",")
-                        .append(String.format("%.4f", weights.get(j, i + 2)));
+            for (int j = 0; j < weights.getRowCount(); j++) {
+                sj.add(String.format("%.4f", weights.get(j, i)))
+                        .add(String.format("%.4f", weights.get(j, i + 1)))
+                        .add(String.format("%.4f", weights.get(j, i + 2)));
             }
-            WEIGHTS_LOGGER.info(sb.toString());
+            WEIGHTS_LOGGER.info(sj.toString());
         }
     }
 
