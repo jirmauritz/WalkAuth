@@ -147,22 +147,22 @@ public class NeuralNetworkLearning {
         NeuralNetwork trainedNeuralNetwork = new NeuralNetwork(neuralNetwork.getWeights());
         error = Evaluation.computeError(trainedNeuralNetwork, validationData);
 
-        printHeader();
-        log(new String[]{
-            Integer.toString(step),
-            String.format("%.4f", error),
-            String.format("%.4f", Evaluation.computeRMSE(trainedNeuralNetwork, validationData)),
-            String.format("%.4f", Evaluation.computeAccuracy(trainedNeuralNetwork, validationData)),
-            String.format("%.4f", Evaluation.computePrecision(trainedNeuralNetwork, validationData)),
-            String.format("%.4f", Evaluation.computeRecall(trainedNeuralNetwork, validationData)),
-            String.format("%.4f", Evaluation.computeF1(trainedNeuralNetwork, validationData)),
-            String.format("%.4f", Evaluation.computeError(trainedNeuralNetwork, trainingData)),
-            String.format("%.4f", Evaluation.computeRMSE(trainedNeuralNetwork, trainingData)),
-            String.format("%.4f", Evaluation.computeAccuracy(trainedNeuralNetwork, trainingData)),
-            String.format("%.4f", Evaluation.computePrecision(trainedNeuralNetwork, trainingData)),
-            String.format("%.4f", Evaluation.computeRecall(trainedNeuralNetwork, trainingData)),
-            String.format("%.4f", Evaluation.computeF1(trainedNeuralNetwork, trainingData))
-        });
+        LogUtils.printLearningHeader();
+        LogUtils.logLearning(new double[]{
+                step,
+                error,
+                Evaluation.computeRMSE(trainedNeuralNetwork, validationData),
+                Evaluation.computeAccuracy(trainedNeuralNetwork, validationData),
+                Evaluation.computePrecision(trainedNeuralNetwork, validationData),
+                Evaluation.computeRecall(trainedNeuralNetwork, validationData),
+                Evaluation.computeF1(trainedNeuralNetwork, validationData),
+                Evaluation.computeError(trainedNeuralNetwork, trainingData),
+                Evaluation.computeRMSE(trainedNeuralNetwork, trainingData),
+                Evaluation.computeAccuracy(trainedNeuralNetwork, trainingData),
+                Evaluation.computePrecision(trainedNeuralNetwork, trainingData),
+                Evaluation.computeRecall(trainedNeuralNetwork, trainingData),
+                Evaluation.computeF1(trainedNeuralNetwork, trainingData)
+            });
 
         while (error > acceptableError && step < maxIterations && isLearning) {
             step++;
@@ -181,20 +181,20 @@ public class NeuralNetworkLearning {
             trainedNeuralNetwork.setWeights(newLayers);
             error = Evaluation.computeError(trainedNeuralNetwork, validationData);
 
-            log(new String[]{
-                Integer.toString(step),
-                String.format("%.4f", error),
-                String.format("%.4f", Evaluation.computeRMSE(trainedNeuralNetwork, validationData)),
-                String.format("%.4f", Evaluation.computeAccuracy(trainedNeuralNetwork, validationData)),
-                String.format("%.4f", Evaluation.computePrecision(trainedNeuralNetwork, validationData)),
-                String.format("%.4f", Evaluation.computeRecall(trainedNeuralNetwork, validationData)),
-                String.format("%.4f", Evaluation.computeF1(trainedNeuralNetwork, validationData)),
-                String.format("%.4f", Evaluation.computeError(trainedNeuralNetwork, trainingData)),
-                String.format("%.4f", Evaluation.computeRMSE(trainedNeuralNetwork, trainingData)),
-                String.format("%.4f", Evaluation.computeAccuracy(trainedNeuralNetwork, trainingData)),
-                String.format("%.4f", Evaluation.computePrecision(trainedNeuralNetwork, trainingData)),
-                String.format("%.4f", Evaluation.computeRecall(trainedNeuralNetwork, trainingData)),
-                String.format("%.4f", Evaluation.computeF1(trainedNeuralNetwork, trainingData))
+            LogUtils.logLearning(new double[]{
+                step,
+                error,
+                Evaluation.computeRMSE(trainedNeuralNetwork, validationData),
+                Evaluation.computeAccuracy(trainedNeuralNetwork, validationData),
+                Evaluation.computePrecision(trainedNeuralNetwork, validationData),
+                Evaluation.computeRecall(trainedNeuralNetwork, validationData),
+                Evaluation.computeF1(trainedNeuralNetwork, validationData),
+                Evaluation.computeError(trainedNeuralNetwork, trainingData),
+                Evaluation.computeRMSE(trainedNeuralNetwork, trainingData),
+                Evaluation.computeAccuracy(trainedNeuralNetwork, trainingData),
+                Evaluation.computePrecision(trainedNeuralNetwork, trainingData),
+                Evaluation.computeRecall(trainedNeuralNetwork, trainingData),
+                Evaluation.computeF1(trainedNeuralNetwork, trainingData)
             });
         }
 
@@ -205,29 +205,14 @@ public class NeuralNetworkLearning {
         } else {
             System.out.println("Gradient descent finnished due network not learning anything.");
         }
+        
+        LogUtils.printWeightsHeader(trainedNeuralNetwork);
+        LogUtils.logWeights(trainedNeuralNetwork);
+        
         return trainedNeuralNetwork;
     }
 
-    private static void printHeader() {
-        // rollover file so that new csv file is created
-        ((RollingFileAppender) logger.getAppender("csv.file")).rollOver();
-        // print header of csv
-        logger.info("iteration, validation error, validation RMSE, validation accuracy, validation precision, validation recall, validation F1, training error, training RMSE, training accuracy, training precision, training recall, training F1");
-
-    }
-
-    private static void log(String[] message) {
-        // concatenate all the information into one line separted with commas
-        StringBuilder sb = new StringBuilder();
-        if (message.length >= 1) {
-            sb.append(message[0]);
-        }
-        for (int i = 1; i < message.length; i++) {
-            sb.append(", ").append(message[i]);
-        }
-
-        logger.info(sb.toString());
-    }
+    
 
     /**
      * Method initialize weights of given network.
