@@ -28,6 +28,7 @@ public class Main {
 				Integer.parseInt(prop.getProperty("entriesPerSample")), 
 				prop.getProperty("dataPath"),
 				prop.getProperty("positiveUser"),
+				Float.parseFloat(prop.getProperty("positiveDataRatio")),
 				Float.parseFloat(prop.getProperty("trainDataRatio")),
 				Float.parseFloat(prop.getProperty("testDataRatio")),
 				Float.parseFloat(prop.getProperty("validationDataRatio"))

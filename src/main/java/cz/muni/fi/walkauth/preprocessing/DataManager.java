@@ -35,6 +35,7 @@ public class DataManager {
 	 * @param entriesForSample - how many entries should be in one sample where one entry is triple x,y,z
 	 * @param dataPath - file path to the data set
 	 * @param positiveUserFilePath - path to a file, that will be used as positive data (positive user)
+	 * @param positiveDataRatio - how much positive data should stand in datasets [0,1]
 	 * @param trainDataRatio - how much data should be in training data set
 	 * @param testDataRatio - how much data should be in testing data set
 	 * @param validationDataRatio - how much data should be in validation data set
@@ -44,6 +45,7 @@ public class DataManager {
 			int entriesForSample,
 			String dataPath,
 			String positiveUserFilePath,
+			float positiveDataRatio,
 			float trainDataRatio,
 			float testDataRatio,
 			float validationDataRatio
@@ -55,7 +57,7 @@ public class DataManager {
 		validationData = new ArrayList<>();
 
 		// verify ratios
-		if (Math.abs(trainDataRatio + testDataRatio + validationDataRatio - 1) > 0.0001) {
+		if (Math.abs(trainDataRatio + testDataRatio + validationDataRatio - 1) > 0.000001) {
 			System.out.println(trainDataRatio + testDataRatio + validationDataRatio - 1);
 			throw new IllegalArgumentException("Ratios of train " + trainDataRatio
 					+ ", test " + testDataRatio + " and verify data " + validationDataRatio + " has to be 1 in sum.");
@@ -80,6 +82,15 @@ public class DataManager {
 		int positiveNum = positiveUserData.size();
 		int negativeNum = negativeUserData.size();
 
+		// adjust numbers according to positiveDataRatio (r = pos / (pos + neg))
+		if (negativeNum >= positiveNum * (1.0f - positiveDataRatio ) / positiveDataRatio) {
+			// there are enough of negative data - most probably will happen
+			negativeNum = Math.round(positiveNum * (1.0f - positiveDataRatio) / positiveDataRatio);
+		} else {
+			// not enough of negative data, reducing positive data - not likely to happen
+			positiveNum = Math.round(negativeNum * positiveDataRatio / (1.0f - positiveDataRatio));
+		}
+		
 		// create training data
 		int trainPosSamplesNum = Math.round(positiveNum * trainDataRatio);
 		int trainNegSamplesNum = Math.round(negativeNum * trainDataRatio);
@@ -91,7 +102,9 @@ public class DataManager {
 		generateData(testingData, positiveUserData, negativeUserData, testUserSamplesNum, testOthersSamplesNum);
 
 		// create verify data
-		generateData(validationData, positiveUserData, negativeUserData, positiveUserData.size(), negativeUserData.size());
+		int validationUserSamplesNum = Math.round(positiveNum * validationDataRatio);
+		int validationOthersSamplesNum = Math.round(negativeNum * validationDataRatio);
+		generateData(validationData, positiveUserData, negativeUserData, validationUserSamplesNum, validationOthersSamplesNum);
 
 		// check if the data are independent
 		for (Sample s : trainingData) {
@@ -130,7 +143,7 @@ public class DataManager {
 		sb.append("test data size: ");
 		sb.append(testingData.size());
 		sb.append(" samples\n");
-		sb.append("verify data size: ");
+		sb.append("validation data size: ");
 		sb.append(validationData.size());
 		sb.append(" samples\n");
 		sb.append("Original mean value: ");
@@ -158,7 +171,7 @@ public class DataManager {
 			}
 		}
 		sb.append("]\n");
-		sb.append("valifation data density: [");
+		sb.append("validation data density: [");
 		for (Sample s : validationData) {
 			if (s.isPositiveUserData()) {
 				sb.append("|");
@@ -236,7 +249,7 @@ public class DataManager {
 		Random rnd = new Random(System.currentTimeMillis());
 
 		// compute ratio
-		double ratio = userNum * 1.0 / othersNum;
+		double ratio = userNum * 1.0 / (userNum + othersNum);
 		ratio *= 100;
 
 		while (userNum > 0 || othersNum > 0) {
