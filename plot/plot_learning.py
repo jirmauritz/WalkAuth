@@ -19,7 +19,11 @@ matplotlib.style.use('ggplot')
 # load CSV file
 LEARNING = pd.read_csv(PATH_TO_LEARNING_LOG, sep=SEPARATOR)
 
-# plot errors into same plot
+# plot accuracies
+LEARNING[["validation accuracy", "training accuracy"]].plot()
+plt.savefig('learning_accuracy.pdf', format='pdf')
+
+# plot errors
 LEARNING[["validation error", "training error"]].plot()
 plt.savefig('learning_error.pdf', format='pdf')
 

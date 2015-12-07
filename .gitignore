@@ -8,10 +8,7 @@ target/
 logs/
 
 # Plots
-plot/learning_error.pdf
-plot/learning_rmse.pdf
-plot/learning_f1.pdf
-plot/weights.pdf
+plot/*.pdf
 
 # NetBeans
 nb-configuration.xml
