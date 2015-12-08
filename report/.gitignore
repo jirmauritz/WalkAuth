@@ -1,0 +1,8 @@
+# exclude everything
+*
+
+# keep only TeX source files
+!*.tex
+
+# keep gitignore
+!.gitignore
