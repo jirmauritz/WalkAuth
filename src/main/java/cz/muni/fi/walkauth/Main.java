@@ -73,7 +73,7 @@ public class Main {
                 Float.parseFloat(prop.getProperty("acceptableError")),
                 (Integer iteration, Double error) -> {
                     double speed = Double.parseDouble(prop.getProperty("learningSpeed"));
-                    return speed * error / (iteration + 8/8.0); 
+                    return speed * error / ((iteration + 8)/8.0); 
                 },
                 Integer.parseInt(prop.getProperty("maxIterations"))
         );

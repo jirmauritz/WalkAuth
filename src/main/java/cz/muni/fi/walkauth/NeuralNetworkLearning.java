@@ -6,7 +6,6 @@ import java.util.Random;
 import java.util.function.BiFunction;
 import java.util.stream.DoubleStream;
 import org.apache.log4j.Logger;
-import org.apache.log4j.RollingFileAppender;
 
 /**
  *
@@ -136,6 +135,7 @@ public class NeuralNetworkLearning {
      * @param acceptableError maximal acceptable error
      * @param learningSpeed function that for the given number of passes returns
      * learning speed (epsilon from slides)
+     * @param maxIterations maximal number of iteration of gradient descent
      * @return trained neural network
      */
     public static NeuralNetwork gradienDescent(NeuralNetwork neuralNetwork, Sample[] trainingData, Sample[] validationData, double acceptableError, BiFunction<Integer, Double, Double> learningSpeed, int maxIterations) {
@@ -170,7 +170,7 @@ public class NeuralNetworkLearning {
             Matrix[] errorDerivationsByWeight = normalizedGradient(trainedNeuralNetwork, trainingData);
 
             for (int i = 0; i < numberOfLayers; i++) {
-                double speed = learningSpeed.apply(step, error);
+                double speed = learningSpeed.apply(step, Evaluation.computeError(trainedNeuralNetwork, trainingData));
                 Matrix errorDerivationByWeight = errorDerivationsByWeight[i];
                 // subtract gradient times speed to the original weights
                 newLayers[i] = trainedNeuralNetwork.getWeights()[i].add(errorDerivationByWeight.multiplyByScalar(-1 * speed)); /*((error < 100) ? (error / trainingData.length) : 1)*/
