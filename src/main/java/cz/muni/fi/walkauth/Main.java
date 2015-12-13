@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
 import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
@@ -74,9 +73,10 @@ public class Main {
                 Float.parseFloat(prop.getProperty("acceptableError")),
                 (Integer iteration, Double error) -> {
                     double speed = Double.parseDouble(prop.getProperty("learningSpeed"));
-                    return speed * error / iteration;
+                    return speed * error / (iteration + 8/8.0); 
                 },
-                Integer.parseInt(prop.getProperty("maxIterations")));
+                Integer.parseInt(prop.getProperty("maxIterations"))
+        );
 
         // evaluate
         double error = Evaluation.computeError(network, dataManager.getTestingData());
