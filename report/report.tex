@@ -15,11 +15,6 @@
 \hypersetup{unicode=true}
 \usepackage{microtype}
 
-\usepackage[backend=bibtex]{biblatex}
-
-\addbibresource{literatura.bib}
-%\bibliography{literatura.bib}
-
 \title{WalkAuth\\
 \large Závěrečná zpráva ze studentského projektu do předmětu PV021
 }
@@ -44,29 +39,23 @@
   Cílem tohoto projektu bylo vytvořit neuronovou síť schopnou porozumnět údajům z akcelerometru naměřeným během klasické chůze několika lidí. Naučili jsme neuronovou síť rozpoznávat jednoho z nich a na dalších vzorcích jsme zjišťovali, zda je možné ho odlišit od ostatních jen podle stylu chůze. Strukturu vstupních dat, neuronovou síť a proces učení jsme navrhli co nejvíce obecné a konfigurovatelné, abychom mohli pozorovat důsledky změny parametrů na výslednou úspěšnost. Použili jsme klasickou vícevrstvou neuronovou síť a učení s učitelem aplikujeme pomocí gradientního sestupu a zpětné propagace.
 \end{abstract}
 
-\section{Úvod do problematiky}
-    \begin{multicols}{2}
-      TODO: obecně o co nám jde, předchozí pokusy (?)
-    \end{multicols}
-
 \section{Zpracování dat}
+      \begin{multicols}{2}
     \subsection{Formát dat}
-      \begin{multicols}{2}
-        Data byla stažena ze zdrojů online repozitáře UCI Machine Learning Repository \cite{uci}. Dataset se jmenuje \textit{User Identification From Walking Activity Data Set} \footnote{\url{http://archive.ics.uci.edu/ml/datasets/User+Identification+From+Walking+Activity}} a je strukturován do 22 csv souborů, kde každý soubor představuje chůzi jednoho uživatele. Každý záznam z akcelerometru obsahuje čas měření a derivaci pohybu v každém ze tří směrů x,y,z. Časy měření nejsou synchornizované, ale jsou závislé na rycholsti zápisu akcelerometru. Úlohu jsme si zjednodušili tím, že jsme ignorovali čas měření, protože všichni používali stejný akcelerometr, a tedy stejný počet záznamů odpovídal přibližně stejnému počtu milisekund v každém záznamu. Čas chůze je různý pro jednotlivé uživatele a pohybuje se od 30 sekund do 11 minut.
-    \end{multicols}
+        Data byla stažena ze zdrojů online repozitáře UCI Machine Learning Repository \footnote{\url{http://archive.ics.uci.edu/ml/datasets/User+Identification+From+Walking+Activity}}. Dataset se jmenuje \textit{User Identification From Walking Activity Data Set}  a je strukturován do 22 csv souborů, kde každý soubor představuje chůzi jednoho uživatele. Každý záznam z akcelerometru obsahuje čas měření a derivaci pohybu v každém ze tří směrů x,y,z. Časy měření nejsou synchornizované, ale jsou závislé na rycholsti zápisu akcelerometru. Úlohu jsme si zjednodušili tím, že jsme ignorovali čas měření, protože všichni používali stejný akcelerometr, a tedy stejný počet záznamů odpovídal přibližně stejnému počtu milisekund v každém záznamu. Čas chůze je různý pro jednotlivé uživatele a pohybuje se od 30 sekund do 11 minut.
     \subsection{Rozdělení dat}
-      \begin{multicols}{2}
-        Jeden vzorek (v dokumentaci označovaný jako sample) odpovídá určitému počtu záznamů, který lze určit parametrem. Výchozí hodnota je 100 záznamů, což odpovídá přibližně třem sekundám chůze. Takový vzor následně slouží jako jeden vstup do neuronové sítě.
-        Rozhodli jsme se rozdělit data na tři množiny: trénovací, testovací a validační. Rozdělení dat mezi tyto množiny je možné upravit pomocí parametrů, ale výchozí hodnoty jsou trénovací 70\%, testovací 20\% a validační 10\%. Trénovací data používáme pro učení sítě, testovací použijeme na závěr učení pro otestování úspěšnosti naučené sítě a validační množina slouží ke kontrole přeučení. Rozdělení vzorků do těchto tří množin je v každém procesu učení náhodné. Výskyt pozitivních a negativních vzorků je v každém ze tří množin rovnoměrný.
-      \end{multicols}
+        Jeden vzorek (v dokumentaci označovaný jako sample) odpovídá určitému počtu záznamů, který lze určit parametrem. Výchozí hodnota je 100 záznamů, což odpovídá přibližně třem sekundám chůze. Takový vzor následně slouží jako jeden vstup do neuronové sítě. Protože je jeden záznam složen ze tří číselných hodnot, vstup do neuronové sítě je třikrát větší, než je počet záznamů v jednom vzorku.
+        Rozhodli jsme se rozdělit data na tři množiny: trénovací, testovací a validační. Rozdělení dat mezi tyto množiny je možné upravit pomocí parametrů, ale výchozí hodnoty jsou trénovací 70\%, testovací 20\% a validační 10\%. Trénovací data používáme pro učení sítě, testovací použijeme na závěr učení pro otestování úspěšnosti naučené sítě a validační množina slouží ke kontrole přeučení. Rozdělení vzorků do těchto tří množin je v každém procesu učení náhodné. Výskyt pozitivních a negativních vzorků je rovnoměrný pro všechny tři množiny.
       
     \subsection{Normalizace dat}
-      \begin{multicols}{2}
-      TODO: normalizace dat (Jirka)
+        Všechny tři množiny jsme normalizovali podle střední hodnoty a směrodatné odchylky naměřené v trénovacích datech. Takto jsme nezavedli žádnou informaci o testovacích datech do trénovací množiny. Normalizovali jsme data na střední hodnotu 0 a směrodatnou odchylku 1. Původní data mají střední hodnotu $2,26$ a směrodatnou odchylku $5,57$.
       \end{multicols}
 \section{Popis implementace}
   \begin{multicols}{2}
-  TODO: Co jsme nakódili, v čem, jak proč, ...
+    TODO: Co jsme nakódili, v čem, jak proč, ...
+    \subsection{Inicializace vah}
+      Počáteční váhy jsme nastavili náhodně v intervalu $[-w,w]$, kde $w$ je hodnota společná pro váhy vstupující do stejné vrstvy v neuronové síti. Hodnotu $w$ jsme spočítali takto $w = \sqrt{\frac{3}{d}}$ kde $d$ je počet vstupů do jednoho neuronu vyšší vrstvy. Takto váhy do neuronu s vyšším počtem vstupů byly menší než váhy do neuronu s ménně vstupy, a proto jejich potenciál byl srovnatelný na počátku učení. Vycházeli jsme z doporučení v materiálech předmětu PV021.
+
   \end{multicols}
 \section{Naměřené výsledky a použité parametry}
   \begin{multicols}{2}
@@ -79,8 +68,8 @@
 \appendix
 \section{Návod na použití}
   TODO: Co je potřeba pro spuštění našeho programu, jak spustit náš program, jak předat parametry, kde jsou zdrojáky, ...
+\section{Rozdělení práce}
 
 
-\printbibliography
 
 \end{document}
