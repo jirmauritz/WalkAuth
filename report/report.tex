@@ -1,4 +1,4 @@
-\documentclass[a4paper, 10pt]{article}
+\documentclass[a4paper, 10pt, twocolumn]{article}
 
 \usepackage[resetfonts]{cmap}
 \usepackage[english, czech]{babel}
@@ -10,6 +10,7 @@
 \usepackage{amssymb}
 \usepackage{listings}
 \usepackage{multicol}
+\usepackage{graphicx}
 
 \usepackage{hyperref}
 \hypersetup{unicode=true}
@@ -32,26 +33,23 @@
 \date{}
 
 \begin{document}
-\maketitle
+\twocolumn[\maketitle ]
 
 
 \begin{abstract}
-  Cílem tohoto projektu bylo vytvořit neuronovou síť schopnou porozumnět údajům z akcelerometru naměřeným během klasické chůze několika lidí. Naučili jsme neuronovou síť rozpoznávat jednoho z nich a na dalších vzorcích jsme zjišťovali, zda je možné ho odlišit od ostatních jen podle stylu chůze. Strukturu vstupních dat, neuronovou síť a proces učení jsme navrhli co nejvíce obecné a konfigurovatelné, abychom mohli pozorovat důsledky změny parametrů na výslednou úspěšnost. Použili jsme klasickou vícevrstvou neuronovou síť a učení s učitelem aplikujeme pomocí gradientního sestupu a zpětné propagace.
+  Cílem tohoto projektu bylo vytvořit neuronovou síť schopnou porozumět údajům z akcelerometru naměřeným během klasické chůze několika lidí. Naučili jsme neuronovou síť rozpoznávat jednoho z nich a na dalších vzorcích jsme zjišťovali, zda je možné ho odlišit od ostatních jen podle stylu chůze. Strukturu vstupních dat, neuronovou síť a proces učení jsme navrhli co nejvíce obecné a konfigurovatelné, abychom mohli pozorovat důsledky změny parametrů na výslednou úspěšnost. Použili jsme klasickou vícevrstvou neuronovou síť a učení s učitelem aplikujeme pomocí gradientního sestupu a zpětné propagace.
 \end{abstract}
 
 \section{Zpracování dat}
-      \begin{multicols}{2}
     \subsection{Formát dat}
-        Data byla stažena ze zdrojů online repozitáře UCI Machine Learning Repository \footnote{\url{http://archive.ics.uci.edu/ml/datasets/User+Identification+From+Walking+Activity}}. Dataset se jmenuje \textit{User Identification From Walking Activity Data Set}  a je strukturován do 22 csv souborů, kde každý soubor představuje chůzi jednoho uživatele. Každý záznam z akcelerometru obsahuje čas měření a derivaci pohybu v každém ze tří směrů x,y,z. Časy měření nejsou synchornizované, ale jsou závislé na rycholsti zápisu akcelerometru. Úlohu jsme si zjednodušili tím, že jsme ignorovali čas měření, protože všichni používali stejný akcelerometr, a tedy stejný počet záznamů odpovídal přibližně stejnému počtu milisekund v každém záznamu. Čas chůze je různý pro jednotlivé uživatele a pohybuje se od 30 sekund do 11 minut.
-    \subsection{Rozdělení dat}
+        Data byla stažena ze zdrojů online repozitáře UCI Machine Learning Repository \footnote{\url{http://archive.ics.uci.edu/ml/datasets/User+Identification+From+Walking+Activity}}. Dataset se jmenuje \textit{User Identification From Walking Activity Data Set}  a je strukturován do 22 csv souborů, kde každý soubor představuje chůzi jednoho uživatele. Každý záznam z akcelerometru obsahuje čas měření a derivaci pohybu v každém ze tří směrů x,y,z. Časy měření nejsou synchronizované, ale jsou závislé na rychlosti zápisu akcelerometru. Úlohu jsme si zjednodušili tím, že jsme ignorovali čas měření, protože všichni používali stejný akcelerometr, a tedy stejný počet záznamů odpovídal přibližně stejnému počtu milisekund v každém záznamu. Čas chůze je různý pro jednotlivé uživatele a pohybuje se od 30 sekund do 11 minut.
+    \subsection{Rozdělení dat}\label{rozdeleni_dat}
         Jeden vzorek (v dokumentaci označovaný jako sample) odpovídá určitému počtu záznamů, který lze určit parametrem. Výchozí hodnota je 100 záznamů, což odpovídá přibližně třem sekundám chůze. Takový vzor následně slouží jako jeden vstup do neuronové sítě. Protože je jeden záznam složen ze tří číselných hodnot, vstup do neuronové sítě je třikrát větší, než je počet záznamů v jednom vzorku.
         Rozhodli jsme se rozdělit data na tři množiny: trénovací, testovací a validační. Rozdělení dat mezi tyto množiny je možné upravit pomocí parametrů, ale výchozí hodnoty jsou trénovací 70\%, testovací 20\% a validační 10\%. Trénovací data používáme pro učení sítě, testovací použijeme na závěr učení pro otestování úspěšnosti naučené sítě a validační množina slouží ke kontrole přeučení. Rozdělení vzorků do těchto tří množin je v každém procesu učení náhodné. Výskyt pozitivních a negativních vzorků je rovnoměrný pro všechny tři množiny.
 
     \subsection{Normalizace dat}
         Všechny tři množiny jsme normalizovali podle střední hodnoty a směrodatné odchylky naměřené v trénovacích datech. Takto jsme nezavedli žádnou informaci o testovacích datech do trénovací množiny. Normalizovali jsme data na střední hodnotu 0 a směrodatnou odchylku 1. Původní data mají střední hodnotu $2,26$ a směrodatnou odchylku $5,57$.
-      \end{multicols}
 \section{Popis implementace}
-  \begin{multicols}{2}
     Projekt jsme implementovali v jazyce Java.
     Zpracování dat pro neuronovou síť zajišťuje třída \texttt{DataManager} (přičemž normalizaci deleguje na třídu \texttt{Normalization} a jeden vzorek je reprezentován třídou \texttt{Sample}).
     Pro reprezentaci neuronové sítě (její topologie a vah) slouží třída \texttt{NeuralNetwork}. Tato třída umožňuje také provádět dopředný výpočet pro zadaný vstupní vzorek.
@@ -75,18 +73,25 @@
     Pořádné otestování zpětné propagace se vyplatilo, protože v prvotní implementaci bylo hned několik chyb, které jsme díky testům okamžitě odhalili a mohli odladit ještě před zapojením funkce do gradientního sestupu.
 
 
-  \end{multicols}
-\section{Naměřené výsledky a použité parametry}
-  \begin{multicols}{2}
-  TODO: Co jsme neuronovou síť naučili, jak dobře, jak dlouho jí to trvalo s jakýma ,,magic`` konstantama, ...
-  \end{multicols}
+\section{Výsledky a parametry}
+Každý běh programu a učení neuronové sítě je náhodné jednak díky inicializaci vah, ale zejména kvůli náhodnému rozdělení vzorků na trénovací, validační a testovací část (viz \ref{rozdeleni_dat}). Průměrně však neuronová síť dosahuje s výchozími parametry $\approx 75\% $ úspěšnosti rozpoznání naučeného člověka. Nejhorší pozorovaná úspěšnost s výchozími parametry byla $69~\%$ a naopak nejlepší $83~\%$. Ve výchozí konfiguraci se učí síť typu 300-30-1 po dobu 400 iterací. Základ pro výpočet rychlosti učení je hodnota 0.005, která je v každém kroku vynásobena aktuální chybou sítě na trénovacích datech a podělena počtem proběhlých iterací. Celkově se rychlost učení postupně snižuje a učení konverguje k nějaké konečné hodnotě vah. Zkoušeli jsme různé kombinace parametrů a tyto se ukázaly jako nejlepší. Pro lepší vizualizaci a pochopení výsledků učení nám posloužily grafy rozložení naučených vah skryté vrstvy. Příklad jednoho takového je vidět níže na obrázku \ref{weighs}. Sloupce reprezentují jednotlivé skryté neurony a každý neuron je rozdělen na tři sloupce vah (osy měřeného zrychlení). Barva pak udává hodnotu váhy neuronu.  
+
+\begin{figure}[ht]
+\centering
+\includegraphics[width=0.5\textwidth]{img/weights.pdf}
+\caption{Výsledné hodnoty váh skrýté vrstvy naučené neuronové sítě.}
+\label{weighs}
+\end{figure}
+
+
+Ačkoli je značně obtížné přesně interpretovat chování neuronové sítě, v obrázku si lze všimnout jistých ,,vzorů``. Jsou vidět posloupnosti extrémů vah, kdy se neuron zaměřil na zrychlení v jednom ze směrů. Druhým vzorem jsou pak ,,vlny`` stejných vah napříč neurony, což interpretujeme jako snahu odhalit různou rychlost chůze.
 \section{Diskuse}
-  \begin{multicols}{2}
     TODO: Proč byla síť neúspěšná, zmínit, že vzorky mohli být z jiných momentů chůze
-  \end{multicols}
+    
 \appendix
 \section{Návod na použití}
-  TODO: Co je potřeba pro spuštění našeho programu, jak spustit náš program, jak předat parametry, kde jsou zdrojáky, ...
+Pro spuštění aplikace je potřeba mít nainstalované \textbf{JRE 1.8}. Starší verze Javy fungovat nebudou. Samotná aplikace se pak spouští z příkazové řádky příkazem \texttt{java -jar WalkAuth.jar}. Pro zobrazení nápovědy stačí přidat standardně přepínač \texttt{-h} na konec příkazu. Aplikace dovoluje přenastavit parametry učení skrze přepínače. Všechny dostupné volby jsou uvedeny v nápovědě včetně stručného popisku. Zdrojové kódy aplikace jsou veřejně dostupné elektronicky na adrese \url{https://github.com/jirmauritz/WalkAuth}.
+
 \section{Rozdělení práce}
 
 
