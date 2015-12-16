@@ -60,7 +60,7 @@
     V následujících odstavcích popisujeme některé zajímavé detaily.
 
     \subsection{Inicializace vah}
-      Počáteční váhy jsme nastavili náhodně v intervalu $[-w,w]$, kde $w$ je hodnota společná pro váhy vstupující do stejné vrstvy v neuronové síti. Hodnotu $w$ jsme spočítali takto $w = \sqrt{\frac{3}{d}}$ kde $d$ je počet vstupů do jednoho neuronu vyšší vrstvy. Takto váhy do neuronu s vyšším počtem vstupů byly menší než váhy do neuronu s méně vstupy, a proto jejich potenciál byl srovnatelný na počátku učení. Vycházeli jsme z doporučení v materiálech předmětu PV021.
+      Počáteční váhy jsme nastavili náhodně v intervalu $[-w,w]$, kde $w$ je hodnota společná pro váhy vstupující do stejné vrstvy v neuronové síti. Hodnotu $w$ jsme spočítali $w = \sqrt{\frac{3}{d}}$ kde $d$ je počet vstupů do jednoho neuronu vyšší vrstvy. Takto váhy do neuronu s vyšším počtem vstupů byly menší než váhy do neuronu s méně vstupy, a proto jejich potenciál byl srovnatelný na počátku učení. Vycházeli jsme z doporučení v materiálech předmětu PV021.
 
     \subsection{Test zpětné propagace}
     Jedním z klíčových algoritmů našeho projektu je zpětná propagace.
@@ -86,14 +86,24 @@ Každý běh programu a učení neuronové sítě je náhodné jednak díky inic
 
 Ačkoli je značně obtížné přesně interpretovat chování neuronové sítě, v obrázku si lze všimnout jistých ,,vzorů``. Jsou vidět posloupnosti extrémů vah, kdy se neuron zaměřil na zrychlení v jednom ze směrů. Druhým vzorem jsou pak ,,vlny`` stejných vah napříč neurony, což interpretujeme jako snahu odhalit různou rychlost chůze.
 \section{Diskuse}
-    TODO: Proč byla síť neúspěšná, zmínit, že vzorky mohli být z jiných momentů chůze
+    Výsledky ukazují průměrnou úspěšnost sítě kolem 75 \%, která hodně kolísá v závislosti na rozdělení vzorků a inicializaci vah mezi 70 \% a 80 \%. Celkově výsledky nejsou uspokojivé natolik, aby mohla být síť použita v reálné aplikaci. Našli jsme hned několik důvodů, proč si myslíme, že se tak stalo. První příčina je nedostatek dat, protože i pro určování uživatele s nejdelší chůzí jsme pracovali s celkovým počtem 300 vzorků. Snížením počtu záznamů na vzorek jsme mohli získat větší množinou vzorků, ale síť špatně rozpoznávala vstupy s méně než třemi sekundami chůze. Dále s tím souvisí i nízká úspěšnost při rozpoznávání dalších uživatelů s málo vstupy (krátkou chůzí). Pro některé z nich se síť učila pouze na desítkách vzorků, což nestačilo na naučení.
+    \paragraph{}
+    Dalším problémem mohlo být různé načasování vzorků chůze. Protože v datech není žádná informace o krocích, rozdělili jsme data jen podle počtu záznamů. Některé vzorky tak mohou začínat došlapem uživatele levou nohou a jiné jejím zvedáním. Předpokládáme, že dobrá neuronová síť si s takovými nepřesnostmi poradí, ale v našem případě nemáme analýzu na potvrzení, zda tomu tak u naší sítě opravdu je.
+    \paragraph{}
+    Pokud by naše neuronová síť dosahovala vyšší úspěšnosti, bylo by možné ji využít jako autentizační mechanismus v mobilních zařízeních. Použití by bylo následovné: uživatel naučí aplikaci svou chůzi na několika vzorcích v různých terénech a aplikace bude následně kontrolovat, zda chůze odpovídá naměřené. Pokud zjistí, že se chůze liší, může jít o krádež a aplikace zareaguje zablokováním, sms zprávou nebo dalšími způsoby.
     
 \appendix
 \section{Návod na použití}
 Pro spuštění aplikace je potřeba mít nainstalované \textbf{JRE 1.8}. Starší verze Javy fungovat nebudou. Samotná aplikace se pak spouští z příkazové řádky příkazem \texttt{java -jar WalkAuth.jar}. Pro zobrazení nápovědy stačí přidat standardně přepínač \texttt{-h} na konec příkazu. Aplikace dovoluje přenastavit parametry učení skrze přepínače. Všechny dostupné volby jsou uvedeny v nápovědě včetně stručného popisku. Zdrojové kódy aplikace jsou veřejně dostupné elektronicky na adrese \url{https://github.com/jirmauritz/WalkAuth}.
 
 \section{Rozdělení práce}
-
+\paragraph{Jiří Mauritz}
+\begin{itemize}
+  \item získání, analýza dat
+  \item rozdělení a normalizace dat
+  \item implementace iniciálního nastavení vah neuronové sítě
+  \item nastavení parametrů a jejich ladění
+\end{itemize}
 
 
 \end{document}

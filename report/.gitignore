@@ -27,6 +27,7 @@
 *.pdf
 *.run.xml
 *-blx.bib
+*.tex~
 
 # include image in form of pdf
 !img/*
