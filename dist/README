@@ -1,0 +1,7 @@
+Pro spuštění programu je potřeba mít nainstalovanou Javu verze 1.8. Poté jde program spustit následujícím příkazem.
+
+$ java -jar WalkAuth.jar
+
+Pro zobrazení nápovědy k používání programu stačí spistit s paramertem -h.
+
+$ java -jar WalkAuth.jar -h

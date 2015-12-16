@@ -1,0 +1,8 @@
+# ignore folder with data
+data
+
+# ignore application jar
+WalkAuth.jar
+
+#ignore final zip
+walkauth.zip
