@@ -46,15 +46,34 @@
     \subsection{Rozdělení dat}
         Jeden vzorek (v dokumentaci označovaný jako sample) odpovídá určitému počtu záznamů, který lze určit parametrem. Výchozí hodnota je 100 záznamů, což odpovídá přibližně třem sekundám chůze. Takový vzor následně slouží jako jeden vstup do neuronové sítě. Protože je jeden záznam složen ze tří číselných hodnot, vstup do neuronové sítě je třikrát větší, než je počet záznamů v jednom vzorku.
         Rozhodli jsme se rozdělit data na tři množiny: trénovací, testovací a validační. Rozdělení dat mezi tyto množiny je možné upravit pomocí parametrů, ale výchozí hodnoty jsou trénovací 70\%, testovací 20\% a validační 10\%. Trénovací data používáme pro učení sítě, testovací použijeme na závěr učení pro otestování úspěšnosti naučené sítě a validační množina slouží ke kontrole přeučení. Rozdělení vzorků do těchto tří množin je v každém procesu učení náhodné. Výskyt pozitivních a negativních vzorků je rovnoměrný pro všechny tři množiny.
-      
+
     \subsection{Normalizace dat}
         Všechny tři množiny jsme normalizovali podle střední hodnoty a směrodatné odchylky naměřené v trénovacích datech. Takto jsme nezavedli žádnou informaci o testovacích datech do trénovací množiny. Normalizovali jsme data na střední hodnotu 0 a směrodatnou odchylku 1. Původní data mají střední hodnotu $2,26$ a směrodatnou odchylku $5,57$.
       \end{multicols}
 \section{Popis implementace}
   \begin{multicols}{2}
-    TODO: Co jsme nakódili, v čem, jak proč, ...
+    Projekt jsme implementovali v jazyce Java.
+    Zpracování dat pro neuronovou síť zajišťuje třída \texttt{DataManager} (přičemž normalizaci deleguje na třídu \texttt{Normalization} a jeden vzorek je reprezentován třídou \texttt{Sample}).
+    Pro reprezentaci neuronové sítě (její topologie a vah) slouží třída \texttt{NeuralNetwork}. Tato třída umožňuje také provádět dopředný výpočet pro zadaný vstupní vzorek.
+    Učení neuronové sítě pak zajišťuje třída \texttt{NeuralNetoworkLearning}. Proces učení začíná nastavením náhodných počátečních vah (popsané podrobněji níže), po kterém následuje klasický gradientní sestup využívající zpětné propagace pro výpočet gradientu čtvercové chyby vzhledem k hodnotám vah.
+    Třída \texttt{Evaluation} implementuje všechny použité evaluační metriky (čtvercová chyba, RMSE, precision, recall a F1).
+    Dále už projekt obsahuje pouze několik pomocných tříd, např. pro práci s maticemi, výpočet aktivační funkce (hyperbolický tangens) a její derivace a logování.
+    Většina funkcionality našeho projektu je pokrytá jednotkovými testy.
+    V následujících odstavcích popisujeme některé zajímavé detaily.
+
     \subsection{Inicializace vah}
-      Počáteční váhy jsme nastavili náhodně v intervalu $[-w,w]$, kde $w$ je hodnota společná pro váhy vstupující do stejné vrstvy v neuronové síti. Hodnotu $w$ jsme spočítali takto $w = \sqrt{\frac{3}{d}}$ kde $d$ je počet vstupů do jednoho neuronu vyšší vrstvy. Takto váhy do neuronu s vyšším počtem vstupů byly menší než váhy do neuronu s ménně vstupy, a proto jejich potenciál byl srovnatelný na počátku učení. Vycházeli jsme z doporučení v materiálech předmětu PV021.
+      Počáteční váhy jsme nastavili náhodně v intervalu $[-w,w]$, kde $w$ je hodnota společná pro váhy vstupující do stejné vrstvy v neuronové síti. Hodnotu $w$ jsme spočítali takto $w = \sqrt{\frac{3}{d}}$ kde $d$ je počet vstupů do jednoho neuronu vyšší vrstvy. Takto váhy do neuronu s vyšším počtem vstupů byly menší než váhy do neuronu s méně vstupy, a proto jejich potenciál byl srovnatelný na počátku učení. Vycházeli jsme z doporučení v materiálech předmětu PV021.
+
+    \subsection{Test zpětné propagace}
+    Jedním z klíčových algoritmů našeho projektu je zpětná propagace.
+    Rozhodli jsme se ho pořádně otestovat jednotkovými testy, ručně však bylo možné připravit pouze extrémně triviální případy.
+    Proto jsme implementovaly jednoduchý numerický výpočet zpětné propagace a pak napsali řadu testů, které kontrolují, že pro různé topologie, aktuální nastavení vah a trénovací data vracejí numerický výpočet gradientu a zpětná propagace stejné výsledky (až na malou odchylku).
+    Numerický výpočet gradientu funguje následovně: pro každou váhu $i$ spočítáme pro dostatečně malé $\delta$ gradient vzhledem k této váze zvlášť numericky pomocí vzorce
+    $$\frac{E(\ldots, \theta_i + \delta, \ldots) - E(\ldots, \theta_i - \delta, \ldots)}{2\delta}$$
+    kde $E$ je čtvercová chyba pro dané nastavení vah.
+    Takový výpočet gradientu je sice neefektivní (takže ho nelze použít při učení), zato však velmi jednoduchý na implementaci a mnohem méně náchylný na chyby než algoritmus zpětné propagace.
+    Pořádné otestování zpětné propagace se vyplatilo, protože v prvotní implementaci bylo hned několik chyb, které jsme díky testům okamžitě odhalili a mohli odladit ještě před zapojením funkce do gradientního sestupu.
+
 
   \end{multicols}
 \section{Naměřené výsledky a použité parametry}
